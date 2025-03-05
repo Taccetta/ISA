@@ -1,0 +1,32 @@
+{
+  "annotations": {
+    "changelogDate": "20250303073230"
+  },
+  "applications": ["carDealership"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "purchaseDate",
+      "fieldType": "LocalDate"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "PurchasedCar",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "car",
+      "relationshipName": "car",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    },
+    {
+      "otherEntityName": "client",
+      "relationshipName": "client",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}

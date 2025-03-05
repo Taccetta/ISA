@@ -1,0 +1,86 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2
+        id="jhi-purchased-car-heading"
+        data-cy="PurchasedCarCreateUpdateHeading"
+        jhiTranslate="carDealershipApp.purchasedCar.home.createOrEditLabel"
+      >
+        Create or edit a Purchased Car
+      </h2>
+
+      <div>
+        <jhi-alert-error></jhi-alert-error>
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="carDealershipApp.purchasedCar.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label" for="field_purchaseDate" jhiTranslate="carDealershipApp.purchasedCar.purchaseDate">Purchase Date</label>
+          <div class="input-group">
+            <input
+              id="field_purchaseDate"
+              data-cy="purchaseDate"
+              type="text"
+              class="form-control"
+              name="purchaseDate"
+              ngbDatepicker
+              #purchaseDateDp="ngbDatepicker"
+              formControlName="purchaseDate"
+            />
+            <button type="button" class="btn btn-secondary" (click)="purchaseDateDp.toggle()">
+              <fa-icon icon="calendar-alt"></fa-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_car" jhiTranslate="carDealershipApp.purchasedCar.car">Car</label>
+          <select class="form-control" id="field_car" data-cy="car" name="car" formControlName="car" [compareWith]="compareCar">
+            <option [ngValue]="null"></option>
+            @for (carOption of carsCollection; track $index) {
+              <option [ngValue]="carOption">{{ carOption.id }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_client" jhiTranslate="carDealershipApp.purchasedCar.client">Client</label>
+          <select
+            class="form-control"
+            id="field_client"
+            data-cy="client"
+            name="client"
+            formControlName="client"
+            [compareWith]="compareClient"
+          >
+            <option [ngValue]="null"></option>
+            @for (clientOption of clientsCollection; track $index) {
+              <option [ngValue]="clientOption">{{ clientOption.id }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban"></fa-icon>&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save"></fa-icon>&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

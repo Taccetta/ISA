@@ -1,0 +1,21 @@
+{
+  "generator-jhipster": {
+    "applicationType": "monolith",
+    "authenticationType": "jwt",
+    "baseName": "carDealership",
+    "buildTool": "maven",
+    "cacheProvider": "no",
+    "clientFramework": "angular",
+    "devDatabaseType": "mysql",
+    "enableSwaggerCodegen": true,
+    "entities": ["Manufacturer", "Client", "Car", "PurchasedCar"],
+    "jhipsterVersion": "8.9.0",
+    "jwtSecretKey": "M2QzMWM1Mzg0NzY2NzI2M2JhNDhkMjIwMWJlZmU1YTIzYmE0NzBjOGRhYzFhYjlmYjVjMzg0MmU3MDQ0ZDlmM2FiZDE1ZTA4ODkzYTc4MThlZDk3OWRlNWNkMDM2MTNlNjRiNjE0NmY0YjlmNTBkYmQ4N2Q0MjdkNzM0Yjk3NTg=",
+    "languages": ["en", "es"],
+    "lastLiquibaseTimestamp": 1740987150000,
+    "nativeLanguage": "en",
+    "packageName": "com.ar.edu.um.montana.cars",
+    "prodDatabaseType": "mysql",
+    "testFrameworks": ["cypress"]
+  }
+}

@@ -1,0 +1,50 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (car(); as carRef) {
+      <div>
+        <h2 data-cy="carDetailsHeading"><span jhiTranslate="carDealershipApp.car.detail.title">Car</span></h2>
+
+        <hr />
+
+        <jhi-alert-error></jhi-alert-error>
+
+        <jhi-alert></jhi-alert>
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ carRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="carDealershipApp.car.model">Model</span></dt>
+          <dd>
+            <span>{{ carRef.model }}</span>
+          </dd>
+          <dt><span jhiTranslate="carDealershipApp.car.year">Year</span></dt>
+          <dd>
+            <span>{{ carRef.year }}</span>
+          </dd>
+          <dt><span jhiTranslate="carDealershipApp.car.available">Available</span></dt>
+          <dd>
+            <span>{{ carRef.available }}</span>
+          </dd>
+          <dt><span jhiTranslate="carDealershipApp.car.manufacturer">Manufacturer</span></dt>
+          <dd>
+            @if (car()!.manufacturer) {
+              <div>
+                <a [routerLink]="['/manufacturer', car()!.manufacturer?.id, 'view']">{{ carRef.manufacturer?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/car', carRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

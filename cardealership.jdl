@@ -1,0 +1,54 @@
+application {
+  config {
+    baseName carDealership,
+    applicationType monolith,
+    authenticationType jwt,
+    packageName com.ar.edu.um.montana.cars,
+    cacheProvider no,
+    buildTool maven,
+    devDatabaseType mysql,
+    prodDatabaseType mysql,
+    clientFramework angular,
+    testFrameworks [cypress],
+    nativeLanguage en,
+    languages [en, es],
+    enableSwaggerCodegen true
+  }
+  entities *
+}
+
+DEFAULT_MIN_LENGTH = 4
+DEFAULT_MAX_LENGTH = 50
+
+entity Manufacturer {
+  name String required unique maxlength(100)
+}
+
+entity Client {
+  firstName String required maxlength(DEFAULT_MAX_LENGTH)
+  lastName String required maxlength(DEFAULT_MAX_LENGTH)
+  email String unique maxlength(DEFAULT_MAX_LENGTH)
+  address String maxlength(DEFAULT_MAX_LENGTH)
+  phone String maxlength(20)
+}
+
+entity Car {
+  model String required maxlength(100)
+  year String required minlength(DEFAULT_MIN_LENGTH) maxlength(DEFAULT_MAX_LENGTH)
+  available Integer required
+}
+
+entity PurchasedCar {
+  purchaseDate LocalDate
+}
+
+relationship OneToOne {
+  Car{manufacturer} to Manufacturer
+  PurchasedCar{car} to Car
+  PurchasedCar{client} to Client
+}
+
+filter Car, Client, PurchasedCar, Manufacturer
+paginate Car, Client, PurchasedCar, Manufacturer with pagination
+service all with serviceImpl
+dto * with mapstruct

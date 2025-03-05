@@ -1,0 +1,26 @@
+{
+  "carDealershipApp": {
+    "purchasedCar": {
+      "home": {
+        "title": "Purchased Cars",
+        "refreshListLabel": "Refrescar lista",
+        "createLabel": "Crear nuevo Purchased Car",
+        "createOrEditLabel": "Crear o editar Purchased Car",
+        "notFound": "Ningún Purchased Cars encontrado"
+      },
+      "created": "Un nuevo Purchased Car ha sido creado con el identificador {{ param }}",
+      "updated": "Un Purchased Car ha sido actualizado con el identificador {{ param }}",
+      "deleted": "Un Purchased Car ha sido eliminado con el identificador {{ param }}",
+      "delete": {
+        "question": "¿Seguro que quiere eliminar Purchased Car {{ id }}?"
+      },
+      "detail": {
+        "title": "Purchased Car"
+      },
+      "id": "ID",
+      "purchaseDate": "Purchase Date",
+      "car": "Car",
+      "client": "Client"
+    }
+  }
+}

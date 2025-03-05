@@ -1,0 +1,40 @@
+{
+  "annotations": {
+    "changelogDate": "20250303073130"
+  },
+  "applications": ["carDealership"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "model",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "year",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "50",
+      "fieldValidateRulesMinlength": "4"
+    },
+    {
+      "fieldName": "available",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Car",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "manufacturer",
+      "relationshipName": "manufacturer",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}
