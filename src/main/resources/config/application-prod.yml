@@ -17,7 +17,7 @@ logging:
   level:
     ROOT: INFO
     tech.jhipster: INFO
-    com.ar.edu.um.montana.cars: INFO
+    com.ar.edu.um.taccetta.cars: INFO
 
 management:
   prometheus:

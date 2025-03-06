@@ -3,7 +3,7 @@ application {
     baseName carDealership,
     applicationType monolith,
     authenticationType jwt,
-    packageName com.ar.edu.um.montana.cars,
+    packageName com.ar.edu.um.taccetta.cars,
     cacheProvider no,
     buildTool maven,
     devDatabaseType mysql,

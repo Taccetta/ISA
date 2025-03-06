@@ -14,7 +14,7 @@
     "languages": ["en", "es"],
     "lastLiquibaseTimestamp": 1740987150000,
     "nativeLanguage": "en",
-    "packageName": "com.ar.edu.um.montana.cars",
+    "packageName": "com.ar.edu.um.taccetta.cars",
     "prodDatabaseType": "mysql",
     "testFrameworks": ["cypress"]
   }
