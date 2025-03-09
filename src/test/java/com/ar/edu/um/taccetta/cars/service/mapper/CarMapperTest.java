@@ -6,18 +6,15 @@ import static org.junit.Assert.assertNull;
 import com.ar.edu.um.taccetta.cars.domain.Car;
 import com.ar.edu.um.taccetta.cars.domain.Manufacturer;
 import com.ar.edu.um.taccetta.cars.service.dto.CarDTO;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@SpringBootTest
 class CarMapperTest {
 
+    @Autowired
     private CarMapper carMapper;
-
-    //Inicializa una instancia de CarMapperImpl
-    @BeforeEach
-    public void setUp() {
-        carMapper = new CarMapperImpl();
-    }
 
     //Testea el mapeo de CarDTO a Car
     @Test
