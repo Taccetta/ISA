@@ -6,6 +6,19 @@
 
     <property name="LOGSTASH_HOST" value="${LOGSTASH_HOST:-localhost}"/>
     <property name="LOGSTASH_PORT" value="${LOGSTASH_PORT:-5000}"/>
+    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/application.log}"/>
+    
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <charset>utf-8</charset>
+            <Pattern>%d %-5level [%thread] %logger{0}: %msg%n</Pattern>
+        </encoder>
+    </appender>
     
     <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
@@ -53,4 +66,6 @@
     <logger name="sun.rmi.transport" level="WARN"/>
     <logger name="com.tngtech.archunit.core.importer" level="ERROR"/>
     <logger name="com.ar.edu.um.taccetta.cars" level="INFO"/>
+    <logger name="com.ar.edu.um.taccetta.cars.web.rest" level="DEBUG"/>
+    <logger name="com.ar.edu.um.taccetta.cars.service" level="DEBUG"/>
 </configuration> 

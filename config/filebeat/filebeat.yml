@@ -1,0 +1,14 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /logs/*.log
+    json.keys_under_root: true
+    json.add_error_key: true
+    json.message_key: message
+
+output.logstash:
+  hosts: ['logstash:5000']
+
+logging.level: info
+logging.to_files: false
