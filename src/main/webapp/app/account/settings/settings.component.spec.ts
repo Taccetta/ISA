@@ -1,15 +1,15 @@
 jest.mock('app/core/auth/account.service');
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormBuilder } from '@angular/forms';
-import { of, throwError } from 'rxjs';
+import { throwError, of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { Account } from 'app/core/auth/account.model';
 
-import SettingsComponent from './settings.component';
+import { SettingsComponent } from './settings.component';
 
 describe('SettingsComponent', () => {
   let comp: SettingsComponent;
@@ -28,8 +28,9 @@ describe('SettingsComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot(), SettingsComponent],
-      providers: [provideHttpClient(), FormBuilder, AccountService],
+      imports: [TranslateModule.forRoot(), HttpClientTestingModule],
+      declarations: [SettingsComponent],
+      providers: [FormBuilder, AccountService],
     })
       .overrideTemplate(SettingsComponent, '')
       .compileComponents();
@@ -73,18 +74,18 @@ describe('SettingsComponent', () => {
     comp.save();
 
     // THEN
-    expect(comp.success()).toBe(true);
+    expect(comp.success).toBe(true);
   });
 
   it('should notify of error upon failed save', () => {
     // GIVEN
-    mockAccountService.save = jest.fn(() => throwError(() => {}));
+    mockAccountService.save = jest.fn(() => throwError('ERROR'));
 
     // WHEN
     comp.ngOnInit();
     comp.save();
 
     // THEN
-    expect(comp.success()).toBe(false);
+    expect(comp.success).toBe(false);
   });
 });

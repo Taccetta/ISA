@@ -1,8 +1,9 @@
 package com.ar.edu.um.taccetta.cars.service;
 
 import com.ar.edu.um.taccetta.cars.service.dto.ManufacturerDTO;
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.ar.edu.um.taccetta.cars.domain.Manufacturer}.
@@ -33,11 +34,12 @@ public interface ManufacturerService {
     Optional<ManufacturerDTO> partialUpdate(ManufacturerDTO manufacturerDTO);
 
     /**
-     * Get all the ManufacturerDTO where Car is {@code null}.
+     * Get all the manufacturers.
      *
-     * @return the {@link List} of entities.
+     * @param pageable the pagination information.
+     * @return the list of entities.
      */
-    List<ManufacturerDTO> findAllWhereCarIsNull();
+    Page<ManufacturerDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" manufacturer.

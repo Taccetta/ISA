@@ -1,9 +1,9 @@
 {
-  "annotations": {
-    "changelogDate": "20250303073130"
-  },
   "applications": ["carDealership"],
+  "changelogDate": "20231204140414",
   "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "car",
   "fields": [
     {
       "fieldName": "model",
@@ -24,17 +24,19 @@
       "fieldValidateRules": ["required"]
     }
   ],
+  "fluentMethods": true,
   "jpaMetamodelFiltering": true,
   "name": "Car",
   "pagination": "pagination",
+  "readOnly": false,
   "relationships": [
     {
+      "otherEntityField": "name",
       "otherEntityName": "manufacturer",
+      "ownerSide": true,
       "relationshipName": "manufacturer",
-      "relationshipSide": "left",
       "relationshipType": "one-to-one"
     }
   ],
-  "searchEngine": "no",
   "service": "serviceImpl"
 }

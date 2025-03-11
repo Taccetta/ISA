@@ -6,7 +6,8 @@ import com.ar.edu.um.taccetta.cars.repository.PurchasedCarRepository;
 import com.ar.edu.um.taccetta.cars.service.criteria.PurchasedCarCriteria;
 import com.ar.edu.um.taccetta.cars.service.dto.PurchasedCarDTO;
 import com.ar.edu.um.taccetta.cars.service.mapper.PurchasedCarMapper;
-import jakarta.persistence.criteria.JoinType;
+import java.util.List;
+import javax.persistence.criteria.JoinType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,13 +21,13 @@ import tech.jhipster.service.QueryService;
  * Service for executing complex queries for {@link PurchasedCar} entities in the database.
  * The main input is a {@link PurchasedCarCriteria} which gets converted to {@link Specification},
  * in a way that all the filters must apply.
- * It returns a {@link Page} of {@link PurchasedCarDTO} which fulfills the criteria.
+ * It returns a {@link List} of {@link PurchasedCarDTO} or a {@link Page} of {@link PurchasedCarDTO} which fulfills the criteria.
  */
 @Service
 @Transactional(readOnly = true)
 public class PurchasedCarQueryService extends QueryService<PurchasedCar> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PurchasedCarQueryService.class);
+    private final Logger log = LoggerFactory.getLogger(PurchasedCarQueryService.class);
 
     private final PurchasedCarRepository purchasedCarRepository;
 
@@ -38,6 +39,18 @@ public class PurchasedCarQueryService extends QueryService<PurchasedCar> {
     }
 
     /**
+     * Return a {@link List} of {@link PurchasedCarDTO} which matches the criteria from the database.
+     * @param criteria The object which holds all the filters, which the entities should match.
+     * @return the matching entities.
+     */
+    @Transactional(readOnly = true)
+    public List<PurchasedCarDTO> findByCriteria(PurchasedCarCriteria criteria) {
+        log.debug("find by criteria : {}", criteria);
+        final Specification<PurchasedCar> specification = createSpecification(criteria);
+        return purchasedCarMapper.toDto(purchasedCarRepository.findAll(specification));
+    }
+
+    /**
      * Return a {@link Page} of {@link PurchasedCarDTO} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @param page The page, which should be returned.
@@ -45,7 +58,7 @@ public class PurchasedCarQueryService extends QueryService<PurchasedCar> {
      */
     @Transactional(readOnly = true)
     public Page<PurchasedCarDTO> findByCriteria(PurchasedCarCriteria criteria, Pageable page) {
-        LOG.debug("find by criteria : {}, page: {}", criteria, page);
+        log.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<PurchasedCar> specification = createSpecification(criteria);
         return purchasedCarRepository.findAll(specification, page).map(purchasedCarMapper::toDto);
     }
@@ -57,7 +70,7 @@ public class PurchasedCarQueryService extends QueryService<PurchasedCar> {
      */
     @Transactional(readOnly = true)
     public long countByCriteria(PurchasedCarCriteria criteria) {
-        LOG.debug("count by criteria : {}", criteria);
+        log.debug("count by criteria : {}", criteria);
         final Specification<PurchasedCar> specification = createSpecification(criteria);
         return purchasedCarRepository.count(specification);
     }
@@ -81,14 +94,16 @@ public class PurchasedCarQueryService extends QueryService<PurchasedCar> {
                 specification = specification.and(buildRangeSpecification(criteria.getPurchaseDate(), PurchasedCar_.purchaseDate));
             }
             if (criteria.getCarId() != null) {
-                specification = specification.and(
-                    buildSpecification(criteria.getCarId(), root -> root.join(PurchasedCar_.car, JoinType.LEFT).get(Car_.id))
-                );
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getCarId(), root -> root.join(PurchasedCar_.car, JoinType.LEFT).get(Car_.id))
+                    );
             }
             if (criteria.getClientId() != null) {
-                specification = specification.and(
-                    buildSpecification(criteria.getClientId(), root -> root.join(PurchasedCar_.client, JoinType.LEFT).get(Client_.id))
-                );
+                specification =
+                    specification.and(
+                        buildSpecification(criteria.getClientId(), root -> root.join(PurchasedCar_.client, JoinType.LEFT).get(Client_.id))
+                    );
             }
         }
         return specification;

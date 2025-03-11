@@ -2,8 +2,7 @@ package com.ar.edu.um.taccetta.cars.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.Optional;
-import org.springdoc.core.annotations.ParameterObject;
+import org.springdoc.api.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
 
@@ -32,19 +31,16 @@ public class CarCriteria implements Serializable, Criteria {
 
     private LongFilter manufacturerId;
 
-    private LongFilter purchasedCarId;
-
     private Boolean distinct;
 
     public CarCriteria() {}
 
     public CarCriteria(CarCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
-        this.model = other.optionalModel().map(StringFilter::copy).orElse(null);
-        this.year = other.optionalYear().map(StringFilter::copy).orElse(null);
-        this.available = other.optionalAvailable().map(IntegerFilter::copy).orElse(null);
-        this.manufacturerId = other.optionalManufacturerId().map(LongFilter::copy).orElse(null);
-        this.purchasedCarId = other.optionalPurchasedCarId().map(LongFilter::copy).orElse(null);
+        this.id = other.id == null ? null : other.id.copy();
+        this.model = other.model == null ? null : other.model.copy();
+        this.year = other.year == null ? null : other.year.copy();
+        this.available = other.available == null ? null : other.available.copy();
+        this.manufacturerId = other.manufacturerId == null ? null : other.manufacturerId.copy();
         this.distinct = other.distinct;
     }
 
@@ -57,13 +53,9 @@ public class CarCriteria implements Serializable, Criteria {
         return id;
     }
 
-    public Optional<LongFilter> optionalId() {
-        return Optional.ofNullable(id);
-    }
-
     public LongFilter id() {
         if (id == null) {
-            setId(new LongFilter());
+            id = new LongFilter();
         }
         return id;
     }
@@ -76,13 +68,9 @@ public class CarCriteria implements Serializable, Criteria {
         return model;
     }
 
-    public Optional<StringFilter> optionalModel() {
-        return Optional.ofNullable(model);
-    }
-
     public StringFilter model() {
         if (model == null) {
-            setModel(new StringFilter());
+            model = new StringFilter();
         }
         return model;
     }
@@ -95,13 +83,9 @@ public class CarCriteria implements Serializable, Criteria {
         return year;
     }
 
-    public Optional<StringFilter> optionalYear() {
-        return Optional.ofNullable(year);
-    }
-
     public StringFilter year() {
         if (year == null) {
-            setYear(new StringFilter());
+            year = new StringFilter();
         }
         return year;
     }
@@ -114,13 +98,9 @@ public class CarCriteria implements Serializable, Criteria {
         return available;
     }
 
-    public Optional<IntegerFilter> optionalAvailable() {
-        return Optional.ofNullable(available);
-    }
-
     public IntegerFilter available() {
         if (available == null) {
-            setAvailable(new IntegerFilter());
+            available = new IntegerFilter();
         }
         return available;
     }
@@ -133,13 +113,9 @@ public class CarCriteria implements Serializable, Criteria {
         return manufacturerId;
     }
 
-    public Optional<LongFilter> optionalManufacturerId() {
-        return Optional.ofNullable(manufacturerId);
-    }
-
     public LongFilter manufacturerId() {
         if (manufacturerId == null) {
-            setManufacturerId(new LongFilter());
+            manufacturerId = new LongFilter();
         }
         return manufacturerId;
     }
@@ -148,37 +124,7 @@ public class CarCriteria implements Serializable, Criteria {
         this.manufacturerId = manufacturerId;
     }
 
-    public LongFilter getPurchasedCarId() {
-        return purchasedCarId;
-    }
-
-    public Optional<LongFilter> optionalPurchasedCarId() {
-        return Optional.ofNullable(purchasedCarId);
-    }
-
-    public LongFilter purchasedCarId() {
-        if (purchasedCarId == null) {
-            setPurchasedCarId(new LongFilter());
-        }
-        return purchasedCarId;
-    }
-
-    public void setPurchasedCarId(LongFilter purchasedCarId) {
-        this.purchasedCarId = purchasedCarId;
-    }
-
     public Boolean getDistinct() {
-        return distinct;
-    }
-
-    public Optional<Boolean> optionalDistinct() {
-        return Optional.ofNullable(distinct);
-    }
-
-    public Boolean distinct() {
-        if (distinct == null) {
-            setDistinct(true);
-        }
         return distinct;
     }
 
@@ -201,27 +147,25 @@ public class CarCriteria implements Serializable, Criteria {
             Objects.equals(year, that.year) &&
             Objects.equals(available, that.available) &&
             Objects.equals(manufacturerId, that.manufacturerId) &&
-            Objects.equals(purchasedCarId, that.purchasedCarId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, model, year, available, manufacturerId, purchasedCarId, distinct);
+        return Objects.hash(id, model, year, available, manufacturerId, distinct);
     }
 
     // prettier-ignore
     @Override
     public String toString() {
         return "CarCriteria{" +
-            optionalId().map(f -> "id=" + f + ", ").orElse("") +
-            optionalModel().map(f -> "model=" + f + ", ").orElse("") +
-            optionalYear().map(f -> "year=" + f + ", ").orElse("") +
-            optionalAvailable().map(f -> "available=" + f + ", ").orElse("") +
-            optionalManufacturerId().map(f -> "manufacturerId=" + f + ", ").orElse("") +
-            optionalPurchasedCarId().map(f -> "purchasedCarId=" + f + ", ").orElse("") +
-            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
-        "}";
+            (id != null ? "id=" + id + ", " : "") +
+            (model != null ? "model=" + model + ", " : "") +
+            (year != null ? "year=" + year + ", " : "") +
+            (available != null ? "available=" + available + ", " : "") +
+            (manufacturerId != null ? "manufacturerId=" + manufacturerId + ", " : "") +
+            (distinct != null ? "distinct=" + distinct + ", " : "") +
+            "}";
     }
 }

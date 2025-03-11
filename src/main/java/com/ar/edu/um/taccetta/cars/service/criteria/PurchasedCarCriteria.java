@@ -2,8 +2,7 @@ package com.ar.edu.um.taccetta.cars.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.Optional;
-import org.springdoc.core.annotations.ParameterObject;
+import org.springdoc.api.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
 
@@ -35,10 +34,10 @@ public class PurchasedCarCriteria implements Serializable, Criteria {
     public PurchasedCarCriteria() {}
 
     public PurchasedCarCriteria(PurchasedCarCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
-        this.purchaseDate = other.optionalPurchaseDate().map(LocalDateFilter::copy).orElse(null);
-        this.carId = other.optionalCarId().map(LongFilter::copy).orElse(null);
-        this.clientId = other.optionalClientId().map(LongFilter::copy).orElse(null);
+        this.id = other.id == null ? null : other.id.copy();
+        this.purchaseDate = other.purchaseDate == null ? null : other.purchaseDate.copy();
+        this.carId = other.carId == null ? null : other.carId.copy();
+        this.clientId = other.clientId == null ? null : other.clientId.copy();
         this.distinct = other.distinct;
     }
 
@@ -51,13 +50,9 @@ public class PurchasedCarCriteria implements Serializable, Criteria {
         return id;
     }
 
-    public Optional<LongFilter> optionalId() {
-        return Optional.ofNullable(id);
-    }
-
     public LongFilter id() {
         if (id == null) {
-            setId(new LongFilter());
+            id = new LongFilter();
         }
         return id;
     }
@@ -70,13 +65,9 @@ public class PurchasedCarCriteria implements Serializable, Criteria {
         return purchaseDate;
     }
 
-    public Optional<LocalDateFilter> optionalPurchaseDate() {
-        return Optional.ofNullable(purchaseDate);
-    }
-
     public LocalDateFilter purchaseDate() {
         if (purchaseDate == null) {
-            setPurchaseDate(new LocalDateFilter());
+            purchaseDate = new LocalDateFilter();
         }
         return purchaseDate;
     }
@@ -89,13 +80,9 @@ public class PurchasedCarCriteria implements Serializable, Criteria {
         return carId;
     }
 
-    public Optional<LongFilter> optionalCarId() {
-        return Optional.ofNullable(carId);
-    }
-
     public LongFilter carId() {
         if (carId == null) {
-            setCarId(new LongFilter());
+            carId = new LongFilter();
         }
         return carId;
     }
@@ -108,13 +95,9 @@ public class PurchasedCarCriteria implements Serializable, Criteria {
         return clientId;
     }
 
-    public Optional<LongFilter> optionalClientId() {
-        return Optional.ofNullable(clientId);
-    }
-
     public LongFilter clientId() {
         if (clientId == null) {
-            setClientId(new LongFilter());
+            clientId = new LongFilter();
         }
         return clientId;
     }
@@ -124,17 +107,6 @@ public class PurchasedCarCriteria implements Serializable, Criteria {
     }
 
     public Boolean getDistinct() {
-        return distinct;
-    }
-
-    public Optional<Boolean> optionalDistinct() {
-        return Optional.ofNullable(distinct);
-    }
-
-    public Boolean distinct() {
-        if (distinct == null) {
-            setDistinct(true);
-        }
         return distinct;
     }
 
@@ -169,11 +141,11 @@ public class PurchasedCarCriteria implements Serializable, Criteria {
     @Override
     public String toString() {
         return "PurchasedCarCriteria{" +
-            optionalId().map(f -> "id=" + f + ", ").orElse("") +
-            optionalPurchaseDate().map(f -> "purchaseDate=" + f + ", ").orElse("") +
-            optionalCarId().map(f -> "carId=" + f + ", ").orElse("") +
-            optionalClientId().map(f -> "clientId=" + f + ", ").orElse("") +
-            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
-        "}";
+            (id != null ? "id=" + id + ", " : "") +
+            (purchaseDate != null ? "purchaseDate=" + purchaseDate + ", " : "") +
+            (carId != null ? "carId=" + carId + ", " : "") +
+            (clientId != null ? "clientId=" + clientId + ", " : "") +
+            (distinct != null ? "distinct=" + distinct + ", " : "") +
+            "}";
     }
 }

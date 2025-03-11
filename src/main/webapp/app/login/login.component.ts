@@ -1,20 +1,19 @@
-import { AfterViewInit, Component, ElementRef, OnInit, inject, signal, viewChild } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Component, ViewChild, OnInit, AfterViewInit, ElementRef } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
-import SharedModule from 'app/shared/shared.module';
 import { LoginService } from 'app/login/login.service';
 import { AccountService } from 'app/core/auth/account.service';
 
 @Component({
   selector: 'jhi-login',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
 })
-export default class LoginComponent implements OnInit, AfterViewInit {
-  username = viewChild.required<ElementRef>('username');
+export class LoginComponent implements OnInit, AfterViewInit {
+  @ViewChild('username', { static: false })
+  username!: ElementRef;
 
-  authenticationError = signal(false);
+  authenticationError = false;
 
   loginForm = new FormGroup({
     username: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -22,9 +21,7 @@ export default class LoginComponent implements OnInit, AfterViewInit {
     rememberMe: new FormControl(false, { nonNullable: true, validators: [Validators.required] }),
   });
 
-  private readonly accountService = inject(AccountService);
-  private readonly loginService = inject(LoginService);
-  private readonly router = inject(Router);
+  constructor(private accountService: AccountService, private loginService: LoginService, private router: Router) {}
 
   ngOnInit(): void {
     // if already authenticated then navigate to home page
@@ -36,19 +33,19 @@ export default class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.username().nativeElement.focus();
+    this.username.nativeElement.focus();
   }
 
   login(): void {
     this.loginService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
-        this.authenticationError.set(false);
+        this.authenticationError = false;
         if (!this.router.getCurrentNavigation()) {
           // There were no routing during login (eg from navigationToStoredUrl)
           this.router.navigate(['']);
         }
       },
-      error: () => this.authenticationError.set(true),
+      error: () => (this.authenticationError = true),
     });
   }
 }

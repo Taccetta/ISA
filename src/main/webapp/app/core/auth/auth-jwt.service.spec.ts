@@ -1,22 +1,23 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AuthServerProvider } from 'app/core/auth/auth-jwt.service';
-import { StateStorageService } from './state-storage.service';
+import { LocalStorageService, NgxWebstorageModule, SessionStorageService } from 'ngx-webstorage';
 
 describe('Auth JWT', () => {
   let service: AuthServerProvider;
+  let localStorageService: LocalStorageService;
+  let sessionStorageService: SessionStorageService;
   let httpMock: HttpTestingController;
-  let mockStorageService: StateStorageService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [HttpClientTestingModule, NgxWebstorageModule.forRoot()],
     });
 
-    mockStorageService = TestBed.inject(StateStorageService);
     httpMock = TestBed.inject(HttpTestingController);
     service = TestBed.inject(AuthServerProvider);
+    localStorageService = TestBed.inject(LocalStorageService);
+    sessionStorageService = TestBed.inject(SessionStorageService);
   });
 
   describe('Get Token', () => {
@@ -26,13 +27,13 @@ describe('Auth JWT', () => {
     });
 
     it('should return token from session storage if local storage is empty', () => {
-      sessionStorage.setItem('jhi-authenticationToken', JSON.stringify('sessionStorageToken'));
+      sessionStorageService.retrieve = jest.fn().mockReturnValue('sessionStorageToken');
       const result = service.getToken();
       expect(result).toEqual('sessionStorageToken');
     });
 
     it('should return token from localstorage storage', () => {
-      localStorage.setItem('jhi-authenticationToken', JSON.stringify('localStorageToken'));
+      localStorageService.retrieve = jest.fn().mockReturnValue('localStorageToken');
       const result = service.getToken();
       expect(result).toEqual('localStorageToken');
     });
@@ -41,7 +42,8 @@ describe('Auth JWT', () => {
   describe('Login', () => {
     it('should clear session storage and save in local storage when rememberMe is true', () => {
       // GIVEN
-      mockStorageService.storeAuthenticationToken = jest.fn();
+      localStorageService.store = jest.fn();
+      sessionStorageService.clear = jest.fn();
 
       // WHEN
       service.login({ username: 'John', password: '123', rememberMe: true }).subscribe();
@@ -49,12 +51,14 @@ describe('Auth JWT', () => {
 
       // THEN
       httpMock.verify();
-      expect(mockStorageService.storeAuthenticationToken).toHaveBeenCalledWith('1', true);
+      expect(localStorageService.store).toHaveBeenCalledWith('authenticationToken', '1');
+      expect(sessionStorageService.clear).toHaveBeenCalled();
     });
 
     it('should clear local storage and save in session storage when rememberMe is false', () => {
       // GIVEN
-      mockStorageService.storeAuthenticationToken = jest.fn();
+      sessionStorageService.store = jest.fn();
+      localStorageService.clear = jest.fn();
 
       // WHEN
       service.login({ username: 'John', password: '123', rememberMe: false }).subscribe();
@@ -62,20 +66,23 @@ describe('Auth JWT', () => {
 
       // THEN
       httpMock.verify();
-      expect(mockStorageService.storeAuthenticationToken).toHaveBeenCalledWith('1', false);
+      expect(sessionStorageService.store).toHaveBeenCalledWith('authenticationToken', '1');
+      expect(localStorageService.clear).toHaveBeenCalled();
     });
   });
 
   describe('Logout', () => {
     it('should clear storage', () => {
       // GIVEN
-      mockStorageService.clearAuthenticationToken = jest.fn();
+      sessionStorageService.clear = jest.fn();
+      localStorageService.clear = jest.fn();
 
       // WHEN
       service.logout().subscribe();
 
       // THEN
-      expect(mockStorageService.clearAuthenticationToken).toHaveBeenCalled();
+      expect(localStorageService.clear).toHaveBeenCalled();
+      expect(sessionStorageService.clear).toHaveBeenCalled();
     });
   });
 });

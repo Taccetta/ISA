@@ -5,24 +5,22 @@ import com.ar.edu.um.taccetta.cars.repository.ClientRepository;
 import com.ar.edu.um.taccetta.cars.service.ClientService;
 import com.ar.edu.um.taccetta.cars.service.dto.ClientDTO;
 import com.ar.edu.um.taccetta.cars.service.mapper.ClientMapper;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service Implementation for managing {@link com.ar.edu.um.taccetta.cars.domain.Client}.
+ * Service Implementation for managing {@link Client}.
  */
 @Service
 @Transactional
 public class ClientServiceImpl implements ClientService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClientServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(ClientServiceImpl.class);
 
     private final ClientRepository clientRepository;
 
@@ -35,7 +33,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public ClientDTO save(ClientDTO clientDTO) {
-        LOG.debug("Request to save Client : {}", clientDTO);
+        log.debug("Request to save Client : {}", clientDTO);
         Client client = clientMapper.toEntity(clientDTO);
         client = clientRepository.save(client);
         return clientMapper.toDto(client);
@@ -43,7 +41,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public ClientDTO update(ClientDTO clientDTO) {
-        LOG.debug("Request to update Client : {}", clientDTO);
+        log.debug("Request to update Client : {}", clientDTO);
         Client client = clientMapper.toEntity(clientDTO);
         client = clientRepository.save(client);
         return clientMapper.toDto(client);
@@ -51,7 +49,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public Optional<ClientDTO> partialUpdate(ClientDTO clientDTO) {
-        LOG.debug("Request to partially update Client : {}", clientDTO);
+        log.debug("Request to partially update Client : {}", clientDTO);
 
         return clientRepository
             .findById(clientDTO.getId())
@@ -64,29 +62,23 @@ public class ClientServiceImpl implements ClientService {
             .map(clientMapper::toDto);
     }
 
-    /**
-     *  Get all the clients where PurchasedCar is {@code null}.
-     *  @return the list of entities.
-     */
+    @Override
     @Transactional(readOnly = true)
-    public List<ClientDTO> findAllWherePurchasedCarIsNull() {
-        LOG.debug("Request to get all clients where PurchasedCar is null");
-        return StreamSupport.stream(clientRepository.findAll().spliterator(), false)
-            .filter(client -> client.getPurchasedCar() == null)
-            .map(clientMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
+    public Page<ClientDTO> findAll(Pageable pageable) {
+        log.debug("Request to get all Clients");
+        return clientRepository.findAll(pageable).map(clientMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<ClientDTO> findOne(Long id) {
-        LOG.debug("Request to get Client : {}", id);
+        log.debug("Request to get Client : {}", id);
         return clientRepository.findById(id).map(clientMapper::toDto);
     }
 
     @Override
     public void delete(Long id) {
-        LOG.debug("Request to delete Client : {}", id);
+        log.debug("Request to delete Client : {}", id);
         clientRepository.deleteById(id);
     }
 }

@@ -1,8 +1,8 @@
 package com.ar.edu.um.taccetta.cars.service.dto;
 
-import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.validation.constraints.*;
 
 /**
  * A DTO for the {@link com.ar.edu.um.taccetta.cars.domain.Client} entity.

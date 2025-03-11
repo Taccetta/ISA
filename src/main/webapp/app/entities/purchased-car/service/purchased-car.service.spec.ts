@@ -1,10 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { DATE_FORMAT } from 'app/config/input.constants';
 import { IPurchasedCar } from '../purchased-car.model';
-import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../purchased-car.test-samples';
+import { sampleWithRequiredData, sampleWithNewData, sampleWithPartialData, sampleWithFullData } from '../purchased-car.test-samples';
 
 import { PurchasedCarService, RestPurchasedCar } from './purchased-car.service';
 
@@ -20,7 +19,7 @@ describe('PurchasedCar Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [HttpClientTestingModule],
     });
     expectedResult = null;
     service = TestBed.inject(PurchasedCarService);
@@ -40,6 +39,7 @@ describe('PurchasedCar Service', () => {
     });
 
     it('should create a PurchasedCar', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const purchasedCar = { ...sampleWithNewData };
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
@@ -167,7 +167,7 @@ describe('PurchasedCar Service', () => {
       });
 
       it('Should return false if one entity is null', () => {
-        const entity1 = { id: 21385 };
+        const entity1 = { id: 123 };
         const entity2 = null;
 
         const compareResult1 = service.comparePurchasedCar(entity1, entity2);
@@ -178,8 +178,8 @@ describe('PurchasedCar Service', () => {
       });
 
       it('Should return false if primaryKey differs', () => {
-        const entity1 = { id: 21385 };
-        const entity2 = { id: 28655 };
+        const entity1 = { id: 123 };
+        const entity2 = { id: 456 };
 
         const compareResult1 = service.comparePurchasedCar(entity1, entity2);
         const compareResult2 = service.comparePurchasedCar(entity2, entity1);
@@ -189,8 +189,8 @@ describe('PurchasedCar Service', () => {
       });
 
       it('Should return false if primaryKey matches', () => {
-        const entity1 = { id: 21385 };
-        const entity2 = { id: 21385 };
+        const entity1 = { id: 123 };
+        const entity2 = { id: 123 };
 
         const compareResult1 = service.comparePurchasedCar(entity1, entity2);
         const compareResult2 = service.comparePurchasedCar(entity2, entity1);

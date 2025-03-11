@@ -1,9 +1,8 @@
 package com.ar.edu.um.taccetta.cars.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 
 /**
  * A Manufacturer.
@@ -24,10 +23,6 @@ public class Manufacturer implements Serializable {
     @Size(max = 100)
     @Column(name = "name", length = 100, nullable = false, unique = true)
     private String name;
-
-    @JsonIgnoreProperties(value = { "manufacturer", "purchasedCar" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "manufacturer")
-    private Car car;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -57,25 +52,6 @@ public class Manufacturer implements Serializable {
         this.name = name;
     }
 
-    public Car getCar() {
-        return this.car;
-    }
-
-    public void setCar(Car car) {
-        if (this.car != null) {
-            this.car.setManufacturer(null);
-        }
-        if (car != null) {
-            car.setManufacturer(this);
-        }
-        this.car = car;
-    }
-
-    public Manufacturer car(Car car) {
-        this.setCar(car);
-        return this;
-    }
-
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -86,7 +62,7 @@ public class Manufacturer implements Serializable {
         if (!(o instanceof Manufacturer)) {
             return false;
         }
-        return getId() != null && getId().equals(((Manufacturer) o).getId());
+        return id != null && id.equals(((Manufacturer) o).id);
     }
 
     @Override

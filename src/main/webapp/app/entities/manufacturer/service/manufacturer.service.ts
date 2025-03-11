@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -14,10 +14,9 @@ export type EntityArrayResponseType = HttpResponse<IManufacturer[]>;
 
 @Injectable({ providedIn: 'root' })
 export class ManufacturerService {
-  protected readonly http = inject(HttpClient);
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/manufacturers');
+
+  constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
   create(manufacturer: NewManufacturer): Observable<EntityResponseType> {
     return this.http.post<IManufacturer>(this.resourceUrl, manufacturer, { observe: 'response' });
@@ -62,8 +61,8 @@ export class ManufacturerService {
   ): Type[] {
     const manufacturers: Type[] = manufacturersToCheck.filter(isPresent);
     if (manufacturers.length > 0) {
-      const manufacturerCollectionIdentifiers = manufacturerCollection.map(manufacturerItem =>
-        this.getManufacturerIdentifier(manufacturerItem),
+      const manufacturerCollectionIdentifiers = manufacturerCollection.map(
+        manufacturerItem => this.getManufacturerIdentifier(manufacturerItem)!
       );
       const manufacturersToAdd = manufacturers.filter(manufacturerItem => {
         const manufacturerIdentifier = this.getManufacturerIdentifier(manufacturerItem);

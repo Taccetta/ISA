@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithNewData, sampleWithRequiredData } from '../purchased-car.test-samples';
+import { sampleWithRequiredData, sampleWithNewData } from '../purchased-car.test-samples';
 
 import { PurchasedCarFormService } from './purchased-car-form.service';
 
@@ -23,7 +23,7 @@ describe('PurchasedCar Form Service', () => {
             purchaseDate: expect.any(Object),
             car: expect.any(Object),
             client: expect.any(Object),
-          }),
+          })
         );
       });
 
@@ -36,13 +36,14 @@ describe('PurchasedCar Form Service', () => {
             purchaseDate: expect.any(Object),
             car: expect.any(Object),
             client: expect.any(Object),
-          }),
+          })
         );
       });
     });
 
     describe('getPurchasedCar', () => {
       it('should return NewPurchasedCar for default PurchasedCar initial value', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const formGroup = service.createPurchasedCarFormGroup(sampleWithNewData);
 
         const purchasedCar = service.getPurchasedCar(formGroup) as any;

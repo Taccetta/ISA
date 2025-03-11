@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
-
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import dayjs from 'dayjs/esm';
 
 import { isPresent } from 'app/core/util/operators';
@@ -27,10 +27,9 @@ export type EntityArrayResponseType = HttpResponse<IPurchasedCar[]>;
 
 @Injectable({ providedIn: 'root' })
 export class PurchasedCarService {
-  protected readonly http = inject(HttpClient);
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/purchased-cars');
+
+  constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
   create(purchasedCar: NewPurchasedCar): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(purchasedCar);
@@ -84,8 +83,8 @@ export class PurchasedCarService {
   ): Type[] {
     const purchasedCars: Type[] = purchasedCarsToCheck.filter(isPresent);
     if (purchasedCars.length > 0) {
-      const purchasedCarCollectionIdentifiers = purchasedCarCollection.map(purchasedCarItem =>
-        this.getPurchasedCarIdentifier(purchasedCarItem),
+      const purchasedCarCollectionIdentifiers = purchasedCarCollection.map(
+        purchasedCarItem => this.getPurchasedCarIdentifier(purchasedCarItem)!
       );
       const purchasedCarsToAdd = purchasedCars.filter(purchasedCarItem => {
         const purchasedCarIdentifier = this.getPurchasedCarIdentifier(purchasedCarItem);

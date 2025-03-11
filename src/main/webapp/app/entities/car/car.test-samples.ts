@@ -1,30 +1,30 @@
 import { ICar, NewCar } from './car.model';
 
 export const sampleWithRequiredData: ICar = {
-  id: 4218,
-  model: 'dim yuck splendid',
-  year: 'sans integer contrast',
-  available: 5068,
+  id: 96848,
+  model: 'local National Account',
+  year: 'Loan',
+  available: 42812,
 };
 
 export const sampleWithPartialData: ICar = {
-  id: 19509,
-  model: 'supportive',
-  year: 'astride',
-  available: 10718,
+  id: 30253,
+  model: 'web-enabled fuchsia',
+  year: 'Soft payment',
+  available: 18809,
 };
 
 export const sampleWithFullData: ICar = {
-  id: 22796,
-  model: 'testimonial yahoo a',
-  year: 'even parody',
-  available: 12743,
+  id: 37075,
+  model: 'Taiwan IB',
+  year: 'content',
+  available: 43567,
 };
 
 export const sampleWithNewData: NewCar = {
-  model: 'ick',
-  year: 'consequently till ruin',
-  available: 5450,
+  model: 'Divide infrastructure Loan',
+  year: 'National',
+  available: 88813,
   id: null,
 };
 

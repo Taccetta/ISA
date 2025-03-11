@@ -1,9 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { IManufacturer } from '../manufacturer.model';
-import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../manufacturer.test-samples';
+import { sampleWithRequiredData, sampleWithNewData, sampleWithPartialData, sampleWithFullData } from '../manufacturer.test-samples';
 
 import { ManufacturerService } from './manufacturer.service';
 
@@ -18,7 +17,7 @@ describe('Manufacturer Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [HttpClientTestingModule],
     });
     expectedResult = null;
     service = TestBed.inject(ManufacturerService);
@@ -38,6 +37,7 @@ describe('Manufacturer Service', () => {
     });
 
     it('should create a Manufacturer', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const manufacturer = { ...sampleWithNewData };
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
@@ -165,7 +165,7 @@ describe('Manufacturer Service', () => {
       });
 
       it('Should return false if one entity is null', () => {
-        const entity1 = { id: 7851 };
+        const entity1 = { id: 123 };
         const entity2 = null;
 
         const compareResult1 = service.compareManufacturer(entity1, entity2);
@@ -176,8 +176,8 @@ describe('Manufacturer Service', () => {
       });
 
       it('Should return false if primaryKey differs', () => {
-        const entity1 = { id: 7851 };
-        const entity2 = { id: 13084 };
+        const entity1 = { id: 123 };
+        const entity2 = { id: 456 };
 
         const compareResult1 = service.compareManufacturer(entity1, entity2);
         const compareResult2 = service.compareManufacturer(entity2, entity1);
@@ -187,8 +187,8 @@ describe('Manufacturer Service', () => {
       });
 
       it('Should return false if primaryKey matches', () => {
-        const entity1 = { id: 7851 };
-        const entity2 = { id: 7851 };
+        const entity1 = { id: 123 };
+        const entity2 = { id: 123 };
 
         const compareResult1 = service.compareManufacturer(entity1, entity2);
         const compareResult2 = service.compareManufacturer(entity2, entity1);

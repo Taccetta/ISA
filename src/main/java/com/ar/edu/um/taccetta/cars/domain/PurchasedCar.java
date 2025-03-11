@@ -1,9 +1,9 @@
 package com.ar.edu.um.taccetta.cars.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import javax.persistence.*;
 
 /**
  * A PurchasedCar.
@@ -23,13 +23,12 @@ public class PurchasedCar implements Serializable {
     @Column(name = "purchase_date")
     private LocalDate purchaseDate;
 
-    @JsonIgnoreProperties(value = { "manufacturer", "purchasedCar" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "manufacturer" }, allowSetters = true)
+    @OneToOne
     @JoinColumn(unique = true)
     private Car car;
 
-    @JsonIgnoreProperties(value = { "purchasedCar" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(unique = true)
     private Client client;
 
@@ -97,7 +96,7 @@ public class PurchasedCar implements Serializable {
         if (!(o instanceof PurchasedCar)) {
             return false;
         }
-        return getId() != null && getId().equals(((PurchasedCar) o).getId());
+        return id != null && id.equals(((PurchasedCar) o).id);
     }
 
     @Override

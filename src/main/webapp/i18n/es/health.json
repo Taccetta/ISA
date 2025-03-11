@@ -25,7 +25,6 @@
     "status": {
       "UNKNOWN": "DESCONOCIDO",
       "UP": "LEVANTADO",
-      "OUT_OF_SERVICE": "FUERA_DE_SERVICIO",
       "DOWN": "CAÍDO"
     }
   }

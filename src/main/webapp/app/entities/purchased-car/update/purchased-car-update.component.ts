@@ -1,40 +1,37 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 
-import SharedModule from 'app/shared/shared.module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { PurchasedCarFormService, PurchasedCarFormGroup } from './purchased-car-form.service';
+import { IPurchasedCar } from '../purchased-car.model';
+import { PurchasedCarService } from '../service/purchased-car.service';
 import { ICar } from 'app/entities/car/car.model';
 import { CarService } from 'app/entities/car/service/car.service';
 import { IClient } from 'app/entities/client/client.model';
 import { ClientService } from 'app/entities/client/service/client.service';
-import { PurchasedCarService } from '../service/purchased-car.service';
-import { IPurchasedCar } from '../purchased-car.model';
-import { PurchasedCarFormGroup, PurchasedCarFormService } from './purchased-car-form.service';
 
 @Component({
   selector: 'jhi-purchased-car-update',
   templateUrl: './purchased-car-update.component.html',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule],
 })
 export class PurchasedCarUpdateComponent implements OnInit {
   isSaving = false;
   purchasedCar: IPurchasedCar | null = null;
 
-  carsCollection: ICar[] = [];
-  clientsCollection: IClient[] = [];
+  carsSharedCollection: ICar[] = [];
+  clientsSharedCollection: IClient[] = [];
 
-  protected purchasedCarService = inject(PurchasedCarService);
-  protected purchasedCarFormService = inject(PurchasedCarFormService);
-  protected carService = inject(CarService);
-  protected clientService = inject(ClientService);
-  protected activatedRoute = inject(ActivatedRoute);
-
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: PurchasedCarFormGroup = this.purchasedCarFormService.createPurchasedCarFormGroup();
+
+  constructor(
+    protected purchasedCarService: PurchasedCarService,
+    protected purchasedCarFormService: PurchasedCarFormService,
+    protected carService: CarService,
+    protected clientService: ClientService,
+    protected activatedRoute: ActivatedRoute
+  ) {}
 
   compareCar = (o1: ICar | null, o2: ICar | null): boolean => this.carService.compareCar(o1, o2);
 
@@ -88,21 +85,24 @@ export class PurchasedCarUpdateComponent implements OnInit {
     this.purchasedCar = purchasedCar;
     this.purchasedCarFormService.resetForm(this.editForm, purchasedCar);
 
-    this.carsCollection = this.carService.addCarToCollectionIfMissing<ICar>(this.carsCollection, purchasedCar.car);
-    this.clientsCollection = this.clientService.addClientToCollectionIfMissing<IClient>(this.clientsCollection, purchasedCar.client);
+    this.carsSharedCollection = this.carService.addCarToCollectionIfMissing<ICar>(this.carsSharedCollection, purchasedCar.car);
+    this.clientsSharedCollection = this.clientService.addClientToCollectionIfMissing<IClient>(
+      this.clientsSharedCollection,
+      purchasedCar.client
+    );
   }
 
   protected loadRelationshipsOptions(): void {
     this.carService
-      .query({ 'purchasedCarId.specified': 'false' })
+      .query()
       .pipe(map((res: HttpResponse<ICar[]>) => res.body ?? []))
       .pipe(map((cars: ICar[]) => this.carService.addCarToCollectionIfMissing<ICar>(cars, this.purchasedCar?.car)))
-      .subscribe((cars: ICar[]) => (this.carsCollection = cars));
+      .subscribe((cars: ICar[]) => (this.carsSharedCollection = cars));
 
     this.clientService
-      .query({ 'purchasedCarId.specified': 'false' })
+      .query()
       .pipe(map((res: HttpResponse<IClient[]>) => res.body ?? []))
       .pipe(map((clients: IClient[]) => this.clientService.addClientToCollectionIfMissing<IClient>(clients, this.purchasedCar?.client)))
-      .subscribe((clients: IClient[]) => (this.clientsCollection = clients));
+      .subscribe((clients: IClient[]) => (this.clientsSharedCollection = clients));
   }
 }

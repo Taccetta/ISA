@@ -1,16 +1,22 @@
-import { Component, input } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
-import SharedModule from 'app/shared/shared.module';
 import { IManufacturer } from '../manufacturer.model';
 
 @Component({
   selector: 'jhi-manufacturer-detail',
   templateUrl: './manufacturer-detail.component.html',
-  imports: [SharedModule, RouterModule],
 })
-export class ManufacturerDetailComponent {
-  manufacturer = input<IManufacturer | null>(null);
+export class ManufacturerDetailComponent implements OnInit {
+  manufacturer: IManufacturer | null = null;
+
+  constructor(protected activatedRoute: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.activatedRoute.data.subscribe(({ manufacturer }) => {
+      this.manufacturer = manufacturer;
+    });
+  }
 
   previousState(): void {
     window.history.back();

@@ -1,8 +1,9 @@
 package com.ar.edu.um.taccetta.cars.service;
 
 import com.ar.edu.um.taccetta.cars.service.dto.CarDTO;
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.ar.edu.um.taccetta.cars.domain.Car}.
@@ -33,11 +34,20 @@ public interface CarService {
     Optional<CarDTO> partialUpdate(CarDTO carDTO);
 
     /**
-     * Get all the CarDTO where PurchasedCar is {@code null}.
+     * Get all the cars.
      *
-     * @return the {@link List} of entities.
+     * @param pageable the pagination information.
+     * @return the list of entities.
      */
-    List<CarDTO> findAllWherePurchasedCarIsNull();
+    Page<CarDTO> findAll(Pageable pageable);
+
+    /**
+     * Get all the cars with eager load of many-to-many relationships.
+     *
+     * @param pageable the pagination information.
+     * @return the list of entities.
+     */
+    Page<CarDTO> findAllWithEagerRelationships(Pageable pageable);
 
     /**
      * Get the "id" car.

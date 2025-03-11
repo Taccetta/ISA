@@ -1,13 +1,13 @@
 jest.mock('@ng-bootstrap/ng-bootstrap');
 
-import { ComponentFixture, TestBed, fakeAsync, inject, tick, waitForAsync } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { ComponentFixture, TestBed, waitForAsync, inject, fakeAsync, tick } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { of } from 'rxjs';
 
 import { UserManagementService } from '../service/user-management.service';
 
-import UserManagementDeleteDialogComponent from './user-management-delete-dialog.component';
+import { UserManagementDeleteDialogComponent } from './user-management-delete-dialog.component';
 
 describe('User Management Delete Component', () => {
   let comp: UserManagementDeleteDialogComponent;
@@ -17,8 +17,9 @@ describe('User Management Delete Component', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [UserManagementDeleteDialogComponent],
-      providers: [provideHttpClient(), NgbActiveModal],
+      imports: [HttpClientTestingModule],
+      declarations: [UserManagementDeleteDialogComponent],
+      providers: [NgbActiveModal],
     })
       .overrideTemplate(UserManagementDeleteDialogComponent, '')
       .compileComponents();
@@ -45,7 +46,7 @@ describe('User Management Delete Component', () => {
         // THEN
         expect(service.delete).toHaveBeenCalledWith('user');
         expect(mockActiveModal.close).toHaveBeenCalledWith('deleted');
-      }),
+      })
     ));
   });
 });

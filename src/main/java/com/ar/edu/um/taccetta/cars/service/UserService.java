@@ -30,7 +30,7 @@ import tech.jhipster.security.RandomUtil;
 @Transactional
 public class UserService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
+    private final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
 
@@ -45,20 +45,20 @@ public class UserService {
     }
 
     public Optional<User> activateRegistration(String key) {
-        LOG.debug("Activating user for activation key {}", key);
+        log.debug("Activating user for activation key {}", key);
         return userRepository
             .findOneByActivationKey(key)
             .map(user -> {
                 // activate given user for the registration key.
                 user.setActivated(true);
                 user.setActivationKey(null);
-                LOG.debug("Activated user: {}", user);
+                log.debug("Activated user: {}", user);
                 return user;
             });
     }
 
     public Optional<User> completePasswordReset(String newPassword, String key) {
-        LOG.debug("Reset user password for reset key {}", key);
+        log.debug("Reset user password for reset key {}", key);
         return userRepository
             .findOneByResetKey(key)
             .filter(user -> user.getResetDate().isAfter(Instant.now().minus(1, ChronoUnit.DAYS)))
@@ -118,7 +118,7 @@ public class UserService {
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
         userRepository.save(newUser);
-        LOG.debug("Created Information for User: {}", newUser);
+        log.debug("Created Information for User: {}", newUser);
         return newUser;
     }
 
@@ -161,7 +161,7 @@ public class UserService {
             user.setAuthorities(authorities);
         }
         userRepository.save(user);
-        LOG.debug("Created Information for User: {}", user);
+        log.debug("Created Information for User: {}", user);
         return user;
     }
 
@@ -172,7 +172,8 @@ public class UserService {
      * @return updated user.
      */
     public Optional<AdminUserDTO> updateUser(AdminUserDTO userDTO) {
-        return Optional.of(userRepository.findById(userDTO.getId()))
+        return Optional
+            .of(userRepository.findById(userDTO.getId()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(user -> {
@@ -194,8 +195,7 @@ public class UserService {
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .forEach(managedAuthorities::add);
-                userRepository.save(user);
-                LOG.debug("Changed Information for User: {}", user);
+                log.debug("Changed Information for User: {}", user);
                 return user;
             })
             .map(AdminUserDTO::new);
@@ -206,7 +206,7 @@ public class UserService {
             .findOneByLogin(login)
             .ifPresent(user -> {
                 userRepository.delete(user);
-                LOG.debug("Deleted User: {}", user);
+                log.debug("Deleted User: {}", user);
             });
     }
 
@@ -220,7 +220,8 @@ public class UserService {
      * @param imageUrl  image URL of user.
      */
     public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
-        SecurityUtils.getCurrentUserLogin()
+        SecurityUtils
+            .getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
             .ifPresent(user -> {
                 user.setFirstName(firstName);
@@ -230,14 +231,14 @@ public class UserService {
                 }
                 user.setLangKey(langKey);
                 user.setImageUrl(imageUrl);
-                userRepository.save(user);
-                LOG.debug("Changed Information for User: {}", user);
+                log.debug("Changed Information for User: {}", user);
             });
     }
 
     @Transactional
     public void changePassword(String currentClearTextPassword, String newPassword) {
-        SecurityUtils.getCurrentUserLogin()
+        SecurityUtils
+            .getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
             .ifPresent(user -> {
                 String currentEncryptedPassword = user.getPassword();
@@ -246,7 +247,7 @@ public class UserService {
                 }
                 String encryptedPassword = passwordEncoder.encode(newPassword);
                 user.setPassword(encryptedPassword);
-                LOG.debug("Changed password for User: {}", user);
+                log.debug("Changed password for User: {}", user);
             });
     }
 
@@ -273,14 +274,14 @@ public class UserService {
     /**
      * Not activated users should be automatically deleted after 3 days.
      * <p>
-     * This is scheduled to get fired every day, at 01:00 (am).
+     * This is scheduled to get fired everyday, at 01:00 (am).
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void removeNotActivatedUsers() {
         userRepository
             .findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS))
             .forEach(user -> {
-                LOG.debug("Deleting not activated user {}", user.getLogin());
+                log.debug("Deleting not activated user {}", user.getLogin());
                 userRepository.delete(user);
             });
     }
@@ -291,6 +292,6 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public List<String> getAuthorities() {
-        return authorityRepository.findAll().stream().map(Authority::getName).toList();
+        return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
     }
 }

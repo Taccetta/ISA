@@ -1,47 +1,53 @@
-import { inject } from '@angular/core';
-import { ActivatedRouteSnapshot, ResolveFn, Routes } from '@angular/router';
-import { of } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Resolve, ActivatedRouteSnapshot, Routes } from '@angular/router';
+import { Observable, of } from 'rxjs';
 
 import { IUser } from './user-management.model';
 import { UserManagementService } from './service/user-management.service';
+import { UserManagementComponent } from './list/user-management.component';
+import { UserManagementDetailComponent } from './detail/user-management-detail.component';
+import { UserManagementUpdateComponent } from './update/user-management-update.component';
 
-export const userManagementResolve: ResolveFn<IUser | null> = (route: ActivatedRouteSnapshot) => {
-  const login = route.paramMap.get('login');
-  if (login) {
-    return inject(UserManagementService).find(login);
+@Injectable({ providedIn: 'root' })
+export class UserManagementResolve implements Resolve<IUser | null> {
+  constructor(private service: UserManagementService) {}
+
+  resolve(route: ActivatedRouteSnapshot): Observable<IUser | null> {
+    const id = route.params['login'];
+    if (id) {
+      return this.service.find(id);
+    }
+    return of(null);
   }
-  return of(null);
-};
+}
 
-const userManagementRoute: Routes = [
+export const userManagementRoute: Routes = [
   {
     path: '',
-    loadComponent: () => import('./list/user-management.component'),
+    component: UserManagementComponent,
     data: {
       defaultSort: 'id,asc',
     },
   },
   {
     path: ':login/view',
-    loadComponent: () => import('./detail/user-management-detail.component'),
+    component: UserManagementDetailComponent,
     resolve: {
-      user: userManagementResolve,
+      user: UserManagementResolve,
     },
   },
   {
     path: 'new',
-    loadComponent: () => import('./update/user-management-update.component'),
+    component: UserManagementUpdateComponent,
     resolve: {
-      user: userManagementResolve,
+      user: UserManagementResolve,
     },
   },
   {
     path: ':login/edit',
-    loadComponent: () => import('./update/user-management-update.component'),
+    component: UserManagementUpdateComponent,
     resolve: {
-      user: userManagementResolve,
+      user: UserManagementResolve,
     },
   },
 ];
-
-export default userManagementRoute;

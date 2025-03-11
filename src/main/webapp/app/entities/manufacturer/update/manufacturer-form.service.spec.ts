@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithNewData, sampleWithRequiredData } from '../manufacturer.test-samples';
+import { sampleWithRequiredData, sampleWithNewData } from '../manufacturer.test-samples';
 
 import { ManufacturerFormService } from './manufacturer-form.service';
 
@@ -21,7 +21,7 @@ describe('Manufacturer Form Service', () => {
           expect.objectContaining({
             id: expect.any(Object),
             name: expect.any(Object),
-          }),
+          })
         );
       });
 
@@ -32,13 +32,14 @@ describe('Manufacturer Form Service', () => {
           expect.objectContaining({
             id: expect.any(Object),
             name: expect.any(Object),
-          }),
+          })
         );
       });
     });
 
     describe('getManufacturer', () => {
       it('should return NewManufacturer for default Manufacturer initial value', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const formGroup = service.createManufacturerFormGroup(sampleWithNewData);
 
         const manufacturer = service.getManufacturer(formGroup) as any;

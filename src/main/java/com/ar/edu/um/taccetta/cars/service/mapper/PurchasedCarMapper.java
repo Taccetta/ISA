@@ -13,17 +13,19 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface PurchasedCarMapper extends EntityMapper<PurchasedCarDTO, PurchasedCar> {
-    @Mapping(target = "car", source = "car", qualifiedByName = "carId")
-    @Mapping(target = "client", source = "client", qualifiedByName = "clientId")
+    @Mapping(target = "car", source = "car", qualifiedByName = "carModel")
+    @Mapping(target = "client", source = "client", qualifiedByName = "clientEmail")
     PurchasedCarDTO toDto(PurchasedCar s);
 
-    @Named("carId")
+    @Named("carModel")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
-    CarDTO toDtoCarId(Car car);
+    @Mapping(target = "model", source = "model")
+    CarDTO toDtoCarModel(Car car);
 
-    @Named("clientId")
+    @Named("clientEmail")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
-    ClientDTO toDtoClientId(Client client);
+    @Mapping(target = "email", source = "email")
+    ClientDTO toDtoClientEmail(Client client);
 }

@@ -1,31 +1,28 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
-import SharedModule from 'app/shared/shared.module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { ClientFormService, ClientFormGroup } from './client-form.service';
 import { IClient } from '../client.model';
 import { ClientService } from '../service/client.service';
-import { ClientFormGroup, ClientFormService } from './client-form.service';
 
 @Component({
   selector: 'jhi-client-update',
   templateUrl: './client-update.component.html',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule],
 })
 export class ClientUpdateComponent implements OnInit {
   isSaving = false;
   client: IClient | null = null;
 
-  protected clientService = inject(ClientService);
-  protected clientFormService = inject(ClientFormService);
-  protected activatedRoute = inject(ActivatedRoute);
-
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ClientFormGroup = this.clientFormService.createClientFormGroup();
+
+  constructor(
+    protected clientService: ClientService,
+    protected clientFormService: ClientFormService,
+    protected activatedRoute: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ client }) => {

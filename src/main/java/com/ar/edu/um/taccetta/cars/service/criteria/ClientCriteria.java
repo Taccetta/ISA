@@ -2,8 +2,7 @@ package com.ar.edu.um.taccetta.cars.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.Optional;
-import org.springdoc.core.annotations.ParameterObject;
+import org.springdoc.api.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
 
@@ -34,20 +33,17 @@ public class ClientCriteria implements Serializable, Criteria {
 
     private StringFilter phone;
 
-    private LongFilter purchasedCarId;
-
     private Boolean distinct;
 
     public ClientCriteria() {}
 
     public ClientCriteria(ClientCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
-        this.firstName = other.optionalFirstName().map(StringFilter::copy).orElse(null);
-        this.lastName = other.optionalLastName().map(StringFilter::copy).orElse(null);
-        this.email = other.optionalEmail().map(StringFilter::copy).orElse(null);
-        this.address = other.optionalAddress().map(StringFilter::copy).orElse(null);
-        this.phone = other.optionalPhone().map(StringFilter::copy).orElse(null);
-        this.purchasedCarId = other.optionalPurchasedCarId().map(LongFilter::copy).orElse(null);
+        this.id = other.id == null ? null : other.id.copy();
+        this.firstName = other.firstName == null ? null : other.firstName.copy();
+        this.lastName = other.lastName == null ? null : other.lastName.copy();
+        this.email = other.email == null ? null : other.email.copy();
+        this.address = other.address == null ? null : other.address.copy();
+        this.phone = other.phone == null ? null : other.phone.copy();
         this.distinct = other.distinct;
     }
 
@@ -60,13 +56,9 @@ public class ClientCriteria implements Serializable, Criteria {
         return id;
     }
 
-    public Optional<LongFilter> optionalId() {
-        return Optional.ofNullable(id);
-    }
-
     public LongFilter id() {
         if (id == null) {
-            setId(new LongFilter());
+            id = new LongFilter();
         }
         return id;
     }
@@ -79,13 +71,9 @@ public class ClientCriteria implements Serializable, Criteria {
         return firstName;
     }
 
-    public Optional<StringFilter> optionalFirstName() {
-        return Optional.ofNullable(firstName);
-    }
-
     public StringFilter firstName() {
         if (firstName == null) {
-            setFirstName(new StringFilter());
+            firstName = new StringFilter();
         }
         return firstName;
     }
@@ -98,13 +86,9 @@ public class ClientCriteria implements Serializable, Criteria {
         return lastName;
     }
 
-    public Optional<StringFilter> optionalLastName() {
-        return Optional.ofNullable(lastName);
-    }
-
     public StringFilter lastName() {
         if (lastName == null) {
-            setLastName(new StringFilter());
+            lastName = new StringFilter();
         }
         return lastName;
     }
@@ -117,13 +101,9 @@ public class ClientCriteria implements Serializable, Criteria {
         return email;
     }
 
-    public Optional<StringFilter> optionalEmail() {
-        return Optional.ofNullable(email);
-    }
-
     public StringFilter email() {
         if (email == null) {
-            setEmail(new StringFilter());
+            email = new StringFilter();
         }
         return email;
     }
@@ -136,13 +116,9 @@ public class ClientCriteria implements Serializable, Criteria {
         return address;
     }
 
-    public Optional<StringFilter> optionalAddress() {
-        return Optional.ofNullable(address);
-    }
-
     public StringFilter address() {
         if (address == null) {
-            setAddress(new StringFilter());
+            address = new StringFilter();
         }
         return address;
     }
@@ -155,13 +131,9 @@ public class ClientCriteria implements Serializable, Criteria {
         return phone;
     }
 
-    public Optional<StringFilter> optionalPhone() {
-        return Optional.ofNullable(phone);
-    }
-
     public StringFilter phone() {
         if (phone == null) {
-            setPhone(new StringFilter());
+            phone = new StringFilter();
         }
         return phone;
     }
@@ -170,37 +142,7 @@ public class ClientCriteria implements Serializable, Criteria {
         this.phone = phone;
     }
 
-    public LongFilter getPurchasedCarId() {
-        return purchasedCarId;
-    }
-
-    public Optional<LongFilter> optionalPurchasedCarId() {
-        return Optional.ofNullable(purchasedCarId);
-    }
-
-    public LongFilter purchasedCarId() {
-        if (purchasedCarId == null) {
-            setPurchasedCarId(new LongFilter());
-        }
-        return purchasedCarId;
-    }
-
-    public void setPurchasedCarId(LongFilter purchasedCarId) {
-        this.purchasedCarId = purchasedCarId;
-    }
-
     public Boolean getDistinct() {
-        return distinct;
-    }
-
-    public Optional<Boolean> optionalDistinct() {
-        return Optional.ofNullable(distinct);
-    }
-
-    public Boolean distinct() {
-        if (distinct == null) {
-            setDistinct(true);
-        }
         return distinct;
     }
 
@@ -224,28 +166,26 @@ public class ClientCriteria implements Serializable, Criteria {
             Objects.equals(email, that.email) &&
             Objects.equals(address, that.address) &&
             Objects.equals(phone, that.phone) &&
-            Objects.equals(purchasedCarId, that.purchasedCarId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, email, address, phone, purchasedCarId, distinct);
+        return Objects.hash(id, firstName, lastName, email, address, phone, distinct);
     }
 
     // prettier-ignore
     @Override
     public String toString() {
         return "ClientCriteria{" +
-            optionalId().map(f -> "id=" + f + ", ").orElse("") +
-            optionalFirstName().map(f -> "firstName=" + f + ", ").orElse("") +
-            optionalLastName().map(f -> "lastName=" + f + ", ").orElse("") +
-            optionalEmail().map(f -> "email=" + f + ", ").orElse("") +
-            optionalAddress().map(f -> "address=" + f + ", ").orElse("") +
-            optionalPhone().map(f -> "phone=" + f + ", ").orElse("") +
-            optionalPurchasedCarId().map(f -> "purchasedCarId=" + f + ", ").orElse("") +
-            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
-        "}";
+            (id != null ? "id=" + id + ", " : "") +
+            (firstName != null ? "firstName=" + firstName + ", " : "") +
+            (lastName != null ? "lastName=" + lastName + ", " : "") +
+            (email != null ? "email=" + email + ", " : "") +
+            (address != null ? "address=" + address + ", " : "") +
+            (phone != null ? "phone=" + phone + ", " : "") +
+            (distinct != null ? "distinct=" + distinct + ", " : "") +
+            "}";
     }
 }

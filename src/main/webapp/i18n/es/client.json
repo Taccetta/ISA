@@ -22,8 +22,7 @@
       "lastName": "Last Name",
       "email": "Email",
       "address": "Address",
-      "phone": "Phone",
-      "purchasedCar": "Purchased Car"
+      "phone": "Phone"
     }
   }
 }

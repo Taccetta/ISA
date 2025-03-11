@@ -1,9 +1,9 @@
 {
-  "annotations": {
-    "changelogDate": "20250303072930"
-  },
   "applications": ["carDealership"],
+  "changelogDate": "20231204140214",
   "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "manufacturer",
   "fields": [
     {
       "fieldName": "name",
@@ -12,10 +12,11 @@
       "fieldValidateRulesMaxlength": "100"
     }
   ],
+  "fluentMethods": true,
   "jpaMetamodelFiltering": true,
   "name": "Manufacturer",
   "pagination": "pagination",
+  "readOnly": false,
   "relationships": [],
-  "searchEngine": "no",
   "service": "serviceImpl"
 }

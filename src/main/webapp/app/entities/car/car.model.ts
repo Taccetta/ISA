@@ -5,7 +5,7 @@ export interface ICar {
   model?: string | null;
   year?: string | null;
   available?: number | null;
-  manufacturer?: Pick<IManufacturer, 'id'> | null;
+  manufacturer?: Pick<IManufacturer, 'id' | 'name'> | null;
 }
 
 export type NewCar = Omit<ICar, 'id'> & { id: null };

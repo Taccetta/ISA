@@ -1,9 +1,8 @@
 package com.ar.edu.um.taccetta.cars.web.rest;
 
-import static com.ar.edu.um.taccetta.cars.domain.CarAsserts.*;
-import static com.ar.edu.um.taccetta.cars.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -11,17 +10,25 @@ import com.ar.edu.um.taccetta.cars.IntegrationTest;
 import com.ar.edu.um.taccetta.cars.domain.Car;
 import com.ar.edu.um.taccetta.cars.domain.Manufacturer;
 import com.ar.edu.um.taccetta.cars.repository.CarRepository;
+import com.ar.edu.um.taccetta.cars.service.CarService;
+import com.ar.edu.um.taccetta.cars.service.criteria.CarCriteria;
 import com.ar.edu.um.taccetta.cars.service.dto.CarDTO;
 import com.ar.edu.um.taccetta.cars.service.mapper.CarMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
-import org.junit.jupiter.api.AfterEach;
+import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Integration tests for the {@link CarResource} REST controller.
  */
 @IntegrationTest
+@ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc
 @WithMockUser
 class CarResourceIT {
@@ -49,16 +57,19 @@ class CarResourceIT {
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static Random random = new Random();
-    private static AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
-
-    @Autowired
-    private ObjectMapper om;
+    private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
     @Autowired
     private CarRepository carRepository;
 
+    @Mock
+    private CarRepository carRepositoryMock;
+
     @Autowired
     private CarMapper carMapper;
+
+    @Mock
+    private CarService carServiceMock;
 
     @Autowired
     private EntityManager em;
@@ -68,16 +79,15 @@ class CarResourceIT {
 
     private Car car;
 
-    private Car insertedCar;
-
     /**
      * Create an entity for this test.
      *
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Car createEntity() {
-        return new Car().model(DEFAULT_MODEL).year(DEFAULT_YEAR).available(DEFAULT_AVAILABLE);
+    public static Car createEntity(EntityManager em) {
+        Car car = new Car().model(DEFAULT_MODEL).year(DEFAULT_YEAR).available(DEFAULT_AVAILABLE);
+        return car;
     }
 
     /**
@@ -86,45 +96,33 @@ class CarResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Car createUpdatedEntity() {
-        return new Car().model(UPDATED_MODEL).year(UPDATED_YEAR).available(UPDATED_AVAILABLE);
+    public static Car createUpdatedEntity(EntityManager em) {
+        Car car = new Car().model(UPDATED_MODEL).year(UPDATED_YEAR).available(UPDATED_AVAILABLE);
+        return car;
     }
 
     @BeforeEach
     public void initTest() {
-        car = createEntity();
-    }
-
-    @AfterEach
-    public void cleanup() {
-        if (insertedCar != null) {
-            carRepository.delete(insertedCar);
-            insertedCar = null;
-        }
+        car = createEntity(em);
     }
 
     @Test
     @Transactional
     void createCar() throws Exception {
-        long databaseSizeBeforeCreate = getRepositoryCount();
+        int databaseSizeBeforeCreate = carRepository.findAll().size();
         // Create the Car
         CarDTO carDTO = carMapper.toDto(car);
-        var returnedCarDTO = om.readValue(
-            restCarMockMvc
-                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(carDTO)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(),
-            CarDTO.class
-        );
+        restCarMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(carDTO)))
+            .andExpect(status().isCreated());
 
         // Validate the Car in the database
-        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
-        var returnedCar = carMapper.toEntity(returnedCarDTO);
-        assertCarUpdatableFieldsEquals(returnedCar, getPersistedCar(returnedCar));
-
-        insertedCar = returnedCar;
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeCreate + 1);
+        Car testCar = carList.get(carList.size() - 1);
+        assertThat(testCar.getModel()).isEqualTo(DEFAULT_MODEL);
+        assertThat(testCar.getYear()).isEqualTo(DEFAULT_YEAR);
+        assertThat(testCar.getAvailable()).isEqualTo(DEFAULT_AVAILABLE);
     }
 
     @Test
@@ -134,21 +132,22 @@ class CarResourceIT {
         car.setId(1L);
         CarDTO carDTO = carMapper.toDto(car);
 
-        long databaseSizeBeforeCreate = getRepositoryCount();
+        int databaseSizeBeforeCreate = carRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restCarMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(carDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(carDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Car in the database
-        assertSameRepositoryCount(databaseSizeBeforeCreate);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeCreate);
     }
 
     @Test
     @Transactional
     void checkModelIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
+        int databaseSizeBeforeTest = carRepository.findAll().size();
         // set the field null
         car.setModel(null);
 
@@ -156,16 +155,17 @@ class CarResourceIT {
         CarDTO carDTO = carMapper.toDto(car);
 
         restCarMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(carDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(carDTO)))
             .andExpect(status().isBadRequest());
 
-        assertSameRepositoryCount(databaseSizeBeforeTest);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeTest);
     }
 
     @Test
     @Transactional
     void checkYearIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
+        int databaseSizeBeforeTest = carRepository.findAll().size();
         // set the field null
         car.setYear(null);
 
@@ -173,16 +173,17 @@ class CarResourceIT {
         CarDTO carDTO = carMapper.toDto(car);
 
         restCarMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(carDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(carDTO)))
             .andExpect(status().isBadRequest());
 
-        assertSameRepositoryCount(databaseSizeBeforeTest);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeTest);
     }
 
     @Test
     @Transactional
     void checkAvailableIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
+        int databaseSizeBeforeTest = carRepository.findAll().size();
         // set the field null
         car.setAvailable(null);
 
@@ -190,17 +191,18 @@ class CarResourceIT {
         CarDTO carDTO = carMapper.toDto(car);
 
         restCarMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(carDTO)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(carDTO)))
             .andExpect(status().isBadRequest());
 
-        assertSameRepositoryCount(databaseSizeBeforeTest);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeTest);
     }
 
     @Test
     @Transactional
     void getAllCars() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
         // Get all the carList
         restCarMockMvc
@@ -213,11 +215,28 @@ class CarResourceIT {
             .andExpect(jsonPath("$.[*].available").value(hasItem(DEFAULT_AVAILABLE)));
     }
 
+    @SuppressWarnings({ "unchecked" })
+    void getAllCarsWithEagerRelationshipsIsEnabled() throws Exception {
+        when(carServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
+
+        restCarMockMvc.perform(get(ENTITY_API_URL + "?eagerload=true")).andExpect(status().isOk());
+
+        verify(carServiceMock, times(1)).findAllWithEagerRelationships(any());
+    }
+
+    @SuppressWarnings({ "unchecked" })
+    void getAllCarsWithEagerRelationshipsIsNotEnabled() throws Exception {
+        when(carServiceMock.findAllWithEagerRelationships(any())).thenReturn(new PageImpl(new ArrayList<>()));
+
+        restCarMockMvc.perform(get(ENTITY_API_URL + "?eagerload=false")).andExpect(status().isOk());
+        verify(carRepositoryMock, times(1)).findAll(any(Pageable.class));
+    }
+
     @Test
     @Transactional
     void getCar() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
         // Get the car
         restCarMockMvc
@@ -234,185 +253,239 @@ class CarResourceIT {
     @Transactional
     void getCarsByIdFiltering() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
         Long id = car.getId();
 
-        defaultCarFiltering("id.equals=" + id, "id.notEquals=" + id);
+        defaultCarShouldBeFound("id.equals=" + id);
+        defaultCarShouldNotBeFound("id.notEquals=" + id);
 
-        defaultCarFiltering("id.greaterThanOrEqual=" + id, "id.greaterThan=" + id);
+        defaultCarShouldBeFound("id.greaterThanOrEqual=" + id);
+        defaultCarShouldNotBeFound("id.greaterThan=" + id);
 
-        defaultCarFiltering("id.lessThanOrEqual=" + id, "id.lessThan=" + id);
+        defaultCarShouldBeFound("id.lessThanOrEqual=" + id);
+        defaultCarShouldNotBeFound("id.lessThan=" + id);
     }
 
     @Test
     @Transactional
     void getAllCarsByModelIsEqualToSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where model equals to
-        defaultCarFiltering("model.equals=" + DEFAULT_MODEL, "model.equals=" + UPDATED_MODEL);
+        // Get all the carList where model equals to DEFAULT_MODEL
+        defaultCarShouldBeFound("model.equals=" + DEFAULT_MODEL);
+
+        // Get all the carList where model equals to UPDATED_MODEL
+        defaultCarShouldNotBeFound("model.equals=" + UPDATED_MODEL);
     }
 
     @Test
     @Transactional
     void getAllCarsByModelIsInShouldWork() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where model in
-        defaultCarFiltering("model.in=" + DEFAULT_MODEL + "," + UPDATED_MODEL, "model.in=" + UPDATED_MODEL);
+        // Get all the carList where model in DEFAULT_MODEL or UPDATED_MODEL
+        defaultCarShouldBeFound("model.in=" + DEFAULT_MODEL + "," + UPDATED_MODEL);
+
+        // Get all the carList where model equals to UPDATED_MODEL
+        defaultCarShouldNotBeFound("model.in=" + UPDATED_MODEL);
     }
 
     @Test
     @Transactional
     void getAllCarsByModelIsNullOrNotNull() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
         // Get all the carList where model is not null
-        defaultCarFiltering("model.specified=true", "model.specified=false");
+        defaultCarShouldBeFound("model.specified=true");
+
+        // Get all the carList where model is null
+        defaultCarShouldNotBeFound("model.specified=false");
     }
 
     @Test
     @Transactional
     void getAllCarsByModelContainsSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where model contains
-        defaultCarFiltering("model.contains=" + DEFAULT_MODEL, "model.contains=" + UPDATED_MODEL);
+        // Get all the carList where model contains DEFAULT_MODEL
+        defaultCarShouldBeFound("model.contains=" + DEFAULT_MODEL);
+
+        // Get all the carList where model contains UPDATED_MODEL
+        defaultCarShouldNotBeFound("model.contains=" + UPDATED_MODEL);
     }
 
     @Test
     @Transactional
     void getAllCarsByModelNotContainsSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where model does not contain
-        defaultCarFiltering("model.doesNotContain=" + UPDATED_MODEL, "model.doesNotContain=" + DEFAULT_MODEL);
+        // Get all the carList where model does not contain DEFAULT_MODEL
+        defaultCarShouldNotBeFound("model.doesNotContain=" + DEFAULT_MODEL);
+
+        // Get all the carList where model does not contain UPDATED_MODEL
+        defaultCarShouldBeFound("model.doesNotContain=" + UPDATED_MODEL);
     }
 
     @Test
     @Transactional
     void getAllCarsByYearIsEqualToSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where year equals to
-        defaultCarFiltering("year.equals=" + DEFAULT_YEAR, "year.equals=" + UPDATED_YEAR);
+        // Get all the carList where year equals to DEFAULT_YEAR
+        defaultCarShouldBeFound("year.equals=" + DEFAULT_YEAR);
+
+        // Get all the carList where year equals to UPDATED_YEAR
+        defaultCarShouldNotBeFound("year.equals=" + UPDATED_YEAR);
     }
 
     @Test
     @Transactional
     void getAllCarsByYearIsInShouldWork() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where year in
-        defaultCarFiltering("year.in=" + DEFAULT_YEAR + "," + UPDATED_YEAR, "year.in=" + UPDATED_YEAR);
+        // Get all the carList where year in DEFAULT_YEAR or UPDATED_YEAR
+        defaultCarShouldBeFound("year.in=" + DEFAULT_YEAR + "," + UPDATED_YEAR);
+
+        // Get all the carList where year equals to UPDATED_YEAR
+        defaultCarShouldNotBeFound("year.in=" + UPDATED_YEAR);
     }
 
     @Test
     @Transactional
     void getAllCarsByYearIsNullOrNotNull() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
         // Get all the carList where year is not null
-        defaultCarFiltering("year.specified=true", "year.specified=false");
+        defaultCarShouldBeFound("year.specified=true");
+
+        // Get all the carList where year is null
+        defaultCarShouldNotBeFound("year.specified=false");
     }
 
     @Test
     @Transactional
     void getAllCarsByYearContainsSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where year contains
-        defaultCarFiltering("year.contains=" + DEFAULT_YEAR, "year.contains=" + UPDATED_YEAR);
+        // Get all the carList where year contains DEFAULT_YEAR
+        defaultCarShouldBeFound("year.contains=" + DEFAULT_YEAR);
+
+        // Get all the carList where year contains UPDATED_YEAR
+        defaultCarShouldNotBeFound("year.contains=" + UPDATED_YEAR);
     }
 
     @Test
     @Transactional
     void getAllCarsByYearNotContainsSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where year does not contain
-        defaultCarFiltering("year.doesNotContain=" + UPDATED_YEAR, "year.doesNotContain=" + DEFAULT_YEAR);
+        // Get all the carList where year does not contain DEFAULT_YEAR
+        defaultCarShouldNotBeFound("year.doesNotContain=" + DEFAULT_YEAR);
+
+        // Get all the carList where year does not contain UPDATED_YEAR
+        defaultCarShouldBeFound("year.doesNotContain=" + UPDATED_YEAR);
     }
 
     @Test
     @Transactional
     void getAllCarsByAvailableIsEqualToSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where available equals to
-        defaultCarFiltering("available.equals=" + DEFAULT_AVAILABLE, "available.equals=" + UPDATED_AVAILABLE);
+        // Get all the carList where available equals to DEFAULT_AVAILABLE
+        defaultCarShouldBeFound("available.equals=" + DEFAULT_AVAILABLE);
+
+        // Get all the carList where available equals to UPDATED_AVAILABLE
+        defaultCarShouldNotBeFound("available.equals=" + UPDATED_AVAILABLE);
     }
 
     @Test
     @Transactional
     void getAllCarsByAvailableIsInShouldWork() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where available in
-        defaultCarFiltering("available.in=" + DEFAULT_AVAILABLE + "," + UPDATED_AVAILABLE, "available.in=" + UPDATED_AVAILABLE);
+        // Get all the carList where available in DEFAULT_AVAILABLE or UPDATED_AVAILABLE
+        defaultCarShouldBeFound("available.in=" + DEFAULT_AVAILABLE + "," + UPDATED_AVAILABLE);
+
+        // Get all the carList where available equals to UPDATED_AVAILABLE
+        defaultCarShouldNotBeFound("available.in=" + UPDATED_AVAILABLE);
     }
 
     @Test
     @Transactional
     void getAllCarsByAvailableIsNullOrNotNull() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
         // Get all the carList where available is not null
-        defaultCarFiltering("available.specified=true", "available.specified=false");
+        defaultCarShouldBeFound("available.specified=true");
+
+        // Get all the carList where available is null
+        defaultCarShouldNotBeFound("available.specified=false");
     }
 
     @Test
     @Transactional
     void getAllCarsByAvailableIsGreaterThanOrEqualToSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where available is greater than or equal to
-        defaultCarFiltering("available.greaterThanOrEqual=" + DEFAULT_AVAILABLE, "available.greaterThanOrEqual=" + UPDATED_AVAILABLE);
+        // Get all the carList where available is greater than or equal to DEFAULT_AVAILABLE
+        defaultCarShouldBeFound("available.greaterThanOrEqual=" + DEFAULT_AVAILABLE);
+
+        // Get all the carList where available is greater than or equal to UPDATED_AVAILABLE
+        defaultCarShouldNotBeFound("available.greaterThanOrEqual=" + UPDATED_AVAILABLE);
     }
 
     @Test
     @Transactional
     void getAllCarsByAvailableIsLessThanOrEqualToSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where available is less than or equal to
-        defaultCarFiltering("available.lessThanOrEqual=" + DEFAULT_AVAILABLE, "available.lessThanOrEqual=" + SMALLER_AVAILABLE);
+        // Get all the carList where available is less than or equal to DEFAULT_AVAILABLE
+        defaultCarShouldBeFound("available.lessThanOrEqual=" + DEFAULT_AVAILABLE);
+
+        // Get all the carList where available is less than or equal to SMALLER_AVAILABLE
+        defaultCarShouldNotBeFound("available.lessThanOrEqual=" + SMALLER_AVAILABLE);
     }
 
     @Test
     @Transactional
     void getAllCarsByAvailableIsLessThanSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where available is less than
-        defaultCarFiltering("available.lessThan=" + UPDATED_AVAILABLE, "available.lessThan=" + DEFAULT_AVAILABLE);
+        // Get all the carList where available is less than DEFAULT_AVAILABLE
+        defaultCarShouldNotBeFound("available.lessThan=" + DEFAULT_AVAILABLE);
+
+        // Get all the carList where available is less than UPDATED_AVAILABLE
+        defaultCarShouldBeFound("available.lessThan=" + UPDATED_AVAILABLE);
     }
 
     @Test
     @Transactional
     void getAllCarsByAvailableIsGreaterThanSomething() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        // Get all the carList where available is greater than
-        defaultCarFiltering("available.greaterThan=" + SMALLER_AVAILABLE, "available.greaterThan=" + DEFAULT_AVAILABLE);
+        // Get all the carList where available is greater than DEFAULT_AVAILABLE
+        defaultCarShouldNotBeFound("available.greaterThan=" + DEFAULT_AVAILABLE);
+
+        // Get all the carList where available is greater than SMALLER_AVAILABLE
+        defaultCarShouldBeFound("available.greaterThan=" + SMALLER_AVAILABLE);
     }
 
     @Test
@@ -421,7 +494,7 @@ class CarResourceIT {
         Manufacturer manufacturer;
         if (TestUtil.findAll(em, Manufacturer.class).isEmpty()) {
             carRepository.saveAndFlush(car);
-            manufacturer = ManufacturerResourceIT.createEntity();
+            manufacturer = ManufacturerResourceIT.createEntity(em);
         } else {
             manufacturer = TestUtil.findAll(em, Manufacturer.class).get(0);
         }
@@ -430,16 +503,12 @@ class CarResourceIT {
         car.setManufacturer(manufacturer);
         carRepository.saveAndFlush(car);
         Long manufacturerId = manufacturer.getId();
+
         // Get all the carList where manufacturer equals to manufacturerId
         defaultCarShouldBeFound("manufacturerId.equals=" + manufacturerId);
 
         // Get all the carList where manufacturer equals to (manufacturerId + 1)
         defaultCarShouldNotBeFound("manufacturerId.equals=" + (manufacturerId + 1));
-    }
-
-    private void defaultCarFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
-        defaultCarShouldBeFound(shouldBeFound);
-        defaultCarShouldNotBeFound(shouldNotBeFound);
     }
 
     /**
@@ -493,49 +562,62 @@ class CarResourceIT {
     @Transactional
     void putExistingCar() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        long databaseSizeBeforeUpdate = getRepositoryCount();
+        int databaseSizeBeforeUpdate = carRepository.findAll().size();
 
         // Update the car
-        Car updatedCar = carRepository.findById(car.getId()).orElseThrow();
+        Car updatedCar = carRepository.findById(car.getId()).get();
         // Disconnect from session so that the updates on updatedCar are not directly saved in db
         em.detach(updatedCar);
         updatedCar.model(UPDATED_MODEL).year(UPDATED_YEAR).available(UPDATED_AVAILABLE);
         CarDTO carDTO = carMapper.toDto(updatedCar);
 
         restCarMockMvc
-            .perform(put(ENTITY_API_URL_ID, carDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(carDTO)))
+            .perform(
+                put(ENTITY_API_URL_ID, carDTO.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(carDTO))
+            )
             .andExpect(status().isOk());
 
         // Validate the Car in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        assertPersistedCarToMatchAllProperties(updatedCar);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeUpdate);
+        Car testCar = carList.get(carList.size() - 1);
+        assertThat(testCar.getModel()).isEqualTo(UPDATED_MODEL);
+        assertThat(testCar.getYear()).isEqualTo(UPDATED_YEAR);
+        assertThat(testCar.getAvailable()).isEqualTo(UPDATED_AVAILABLE);
     }
 
     @Test
     @Transactional
     void putNonExistingCar() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        car.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = carRepository.findAll().size();
+        car.setId(count.incrementAndGet());
 
         // Create the Car
         CarDTO carDTO = carMapper.toDto(car);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restCarMockMvc
-            .perform(put(ENTITY_API_URL_ID, carDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(carDTO)))
+            .perform(
+                put(ENTITY_API_URL_ID, carDTO.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(TestUtil.convertObjectToJsonBytes(carDTO))
+            )
             .andExpect(status().isBadRequest());
 
         // Validate the Car in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithIdMismatchCar() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        car.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = carRepository.findAll().size();
+        car.setId(count.incrementAndGet());
 
         // Create the Car
         CarDTO carDTO = carMapper.toDto(car);
@@ -543,41 +625,43 @@ class CarResourceIT {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restCarMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, longCount.incrementAndGet())
+                put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(carDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(carDTO))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Car in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithMissingIdPathParamCar() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        car.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = carRepository.findAll().size();
+        car.setId(count.incrementAndGet());
 
         // Create the Car
         CarDTO carDTO = carMapper.toDto(car);
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restCarMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(carDTO)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(carDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Car in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void partialUpdateCarWithPatch() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        long databaseSizeBeforeUpdate = getRepositoryCount();
+        int databaseSizeBeforeUpdate = carRepository.findAll().size();
 
         // Update the car using partial update
         Car partialUpdatedCar = new Car();
@@ -589,23 +673,26 @@ class CarResourceIT {
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedCar.getId())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedCar))
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedCar))
             )
             .andExpect(status().isOk());
 
         // Validate the Car in the database
-
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        assertCarUpdatableFieldsEquals(createUpdateProxyForBean(partialUpdatedCar, car), getPersistedCar(car));
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeUpdate);
+        Car testCar = carList.get(carList.size() - 1);
+        assertThat(testCar.getModel()).isEqualTo(UPDATED_MODEL);
+        assertThat(testCar.getYear()).isEqualTo(UPDATED_YEAR);
+        assertThat(testCar.getAvailable()).isEqualTo(UPDATED_AVAILABLE);
     }
 
     @Test
     @Transactional
     void fullUpdateCarWithPatch() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        long databaseSizeBeforeUpdate = getRepositoryCount();
+        int databaseSizeBeforeUpdate = carRepository.findAll().size();
 
         // Update the car using partial update
         Car partialUpdatedCar = new Car();
@@ -617,21 +704,24 @@ class CarResourceIT {
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedCar.getId())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedCar))
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedCar))
             )
             .andExpect(status().isOk());
 
         // Validate the Car in the database
-
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        assertCarUpdatableFieldsEquals(partialUpdatedCar, getPersistedCar(partialUpdatedCar));
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeUpdate);
+        Car testCar = carList.get(carList.size() - 1);
+        assertThat(testCar.getModel()).isEqualTo(UPDATED_MODEL);
+        assertThat(testCar.getYear()).isEqualTo(UPDATED_YEAR);
+        assertThat(testCar.getAvailable()).isEqualTo(UPDATED_AVAILABLE);
     }
 
     @Test
     @Transactional
     void patchNonExistingCar() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        car.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = carRepository.findAll().size();
+        car.setId(count.incrementAndGet());
 
         // Create the Car
         CarDTO carDTO = carMapper.toDto(car);
@@ -639,19 +729,22 @@ class CarResourceIT {
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restCarMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, carDTO.getId()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(carDTO))
+                patch(ENTITY_API_URL_ID, carDTO.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(carDTO))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Car in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithIdMismatchCar() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        car.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = carRepository.findAll().size();
+        car.setId(count.incrementAndGet());
 
         // Create the Car
         CarDTO carDTO = carMapper.toDto(car);
@@ -659,74 +752,49 @@ class CarResourceIT {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restCarMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
+                patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(carDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(carDTO))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Car in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithMissingIdPathParamCar() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        car.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = carRepository.findAll().size();
+        car.setId(count.incrementAndGet());
 
         // Create the Car
         CarDTO carDTO = carMapper.toDto(car);
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restCarMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(om.writeValueAsBytes(carDTO)))
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(carDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Car in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void deleteCar() throws Exception {
         // Initialize the database
-        insertedCar = carRepository.saveAndFlush(car);
+        carRepository.saveAndFlush(car);
 
-        long databaseSizeBeforeDelete = getRepositoryCount();
+        int databaseSizeBeforeDelete = carRepository.findAll().size();
 
         // Delete the car
         restCarMockMvc.perform(delete(ENTITY_API_URL_ID, car.getId()).accept(MediaType.APPLICATION_JSON)).andExpect(status().isNoContent());
 
         // Validate the database contains one less item
-        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
-    }
-
-    protected long getRepositoryCount() {
-        return carRepository.count();
-    }
-
-    protected void assertIncrementedRepositoryCount(long countBefore) {
-        assertThat(countBefore + 1).isEqualTo(getRepositoryCount());
-    }
-
-    protected void assertDecrementedRepositoryCount(long countBefore) {
-        assertThat(countBefore - 1).isEqualTo(getRepositoryCount());
-    }
-
-    protected void assertSameRepositoryCount(long countBefore) {
-        assertThat(countBefore).isEqualTo(getRepositoryCount());
-    }
-
-    protected Car getPersistedCar(Car car) {
-        return carRepository.findById(car.getId()).orElseThrow();
-    }
-
-    protected void assertPersistedCarToMatchAllProperties(Car expectedCar) {
-        assertCarAllPropertiesEquals(expectedCar, getPersistedCar(expectedCar));
-    }
-
-    protected void assertPersistedCarToMatchUpdatableProperties(Car expectedCar) {
-        assertCarAllUpdatablePropertiesEquals(expectedCar, getPersistedCar(expectedCar));
+        List<Car> carList = carRepository.findAll();
+        assertThat(carList).hasSize(databaseSizeBeforeDelete - 1);
     }
 }

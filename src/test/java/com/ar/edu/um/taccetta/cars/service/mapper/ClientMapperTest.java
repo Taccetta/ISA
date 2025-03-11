@@ -5,15 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.ar.edu.um.taccetta.cars.domain.Client;
 import com.ar.edu.um.taccetta.cars.service.dto.ClientDTO;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
 class ClientMapperTest {
 
-    @Autowired
     private ClientMapper clientMapper;
+
+    @BeforeEach
+    public void setUp() {
+        clientMapper = new ClientMapperImpl();
+    }
 
     @Test
     public void testClientDtoToEntity() {

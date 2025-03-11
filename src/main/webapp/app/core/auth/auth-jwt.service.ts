@@ -1,11 +1,11 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { LocalStorageService, SessionStorageService } from 'ngx-webstorage';
 
-import { Login } from 'app/login/login.model';
 import { ApplicationConfigService } from '../config/application-config.service';
-import { StateStorageService } from './state-storage.service';
+import { Login } from 'app/login/login.model';
 
 type JwtToken = {
   id_token: string;
@@ -13,12 +13,17 @@ type JwtToken = {
 
 @Injectable({ providedIn: 'root' })
 export class AuthServerProvider {
-  private readonly http = inject(HttpClient);
-  private readonly stateStorageService = inject(StateStorageService);
-  private readonly applicationConfigService = inject(ApplicationConfigService);
+  constructor(
+    private http: HttpClient,
+    private localStorageService: LocalStorageService,
+    private sessionStorageService: SessionStorageService,
+    private applicationConfigService: ApplicationConfigService
+  ) {}
 
   getToken(): string {
-    return this.stateStorageService.getAuthenticationToken() ?? '';
+    const tokenInLocalStorage: string | null = this.localStorageService.retrieve('authenticationToken');
+    const tokenInSessionStorage: string | null = this.sessionStorageService.retrieve('authenticationToken');
+    return tokenInLocalStorage ?? tokenInSessionStorage ?? '';
   }
 
   login(credentials: Login): Observable<void> {
@@ -29,12 +34,20 @@ export class AuthServerProvider {
 
   logout(): Observable<void> {
     return new Observable(observer => {
-      this.stateStorageService.clearAuthenticationToken();
+      this.localStorageService.clear('authenticationToken');
+      this.sessionStorageService.clear('authenticationToken');
       observer.complete();
     });
   }
 
   private authenticateSuccess(response: JwtToken, rememberMe: boolean): void {
-    this.stateStorageService.storeAuthenticationToken(response.id_token, rememberMe);
+    const jwt = response.id_token;
+    if (rememberMe) {
+      this.localStorageService.store('authenticationToken', jwt);
+      this.sessionStorageService.clear('authenticationToken');
+    } else {
+      this.sessionStorageService.store('authenticationToken', jwt);
+      this.localStorageService.clear('authenticationToken');
+    }
   }
 }

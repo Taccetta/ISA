@@ -1,6 +1,7 @@
 package com.ar.edu.um.taccetta.cars.web.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -8,9 +9,7 @@ import com.ar.edu.um.taccetta.cars.IntegrationTest;
 import com.ar.edu.um.taccetta.cars.domain.User;
 import com.ar.edu.um.taccetta.cars.repository.UserRepository;
 import com.ar.edu.um.taccetta.cars.security.AuthoritiesConstants;
-import com.ar.edu.um.taccetta.cars.service.UserService;
-import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
+import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,40 +20,29 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Integration tests for the {@link PublicUserResource} REST controller.
+ * Integration tests for the {@link UserResource} REST controller.
  */
 @AutoConfigureMockMvc
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @IntegrationTest
 class PublicUserResourceIT {
 
+    private static final String DEFAULT_LOGIN = "johndoe";
+
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private UserService userService;
+    private EntityManager em;
 
     @Autowired
     private MockMvc restUserMockMvc;
 
     private User user;
-    private Long numberOfUsers;
-
-    @BeforeEach
-    public void countUsers() {
-        numberOfUsers = userRepository.count();
-    }
 
     @BeforeEach
     public void initTest() {
-        user = UserResourceIT.initTestUser();
-    }
-
-    @AfterEach
-    public void cleanupAndCheck() {
-        userService.deleteUser(user.getLogin());
-        assertThat(userRepository.count()).isEqualTo(numberOfUsers);
-        numberOfUsers = null;
+        user = UserResourceIT.initTestUser(userRepository, em);
     }
 
     @Test
@@ -68,11 +56,21 @@ class PublicUserResourceIT {
             .perform(get("/api/users?sort=id,desc").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[?(@.id == %d)].login", user.getId()).value(user.getLogin()))
-            .andExpect(jsonPath("$.[?(@.id == %d)].keys()", user.getId()).value(Set.of("id", "login")))
-            .andExpect(jsonPath("$.[*].email").doesNotHaveJsonPath())
-            .andExpect(jsonPath("$.[*].imageUrl").doesNotHaveJsonPath())
-            .andExpect(jsonPath("$.[*].langKey").doesNotHaveJsonPath());
+            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN)))
+            .andExpect(jsonPath("$.[*].email").doesNotExist())
+            .andExpect(jsonPath("$.[*].imageUrl").doesNotExist())
+            .andExpect(jsonPath("$.[*].langKey").doesNotExist());
+    }
+
+    @Test
+    @Transactional
+    void getAllAuthorities() throws Exception {
+        restUserMockMvc
+            .perform(get("/api/authorities").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").value(hasItems(AuthoritiesConstants.USER, AuthoritiesConstants.ADMIN)));
     }
 
     @Test

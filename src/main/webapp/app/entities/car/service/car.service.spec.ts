@@ -1,9 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { ICar } from '../car.model';
-import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../car.test-samples';
+import { sampleWithRequiredData, sampleWithNewData, sampleWithPartialData, sampleWithFullData } from '../car.test-samples';
 
 import { CarService } from './car.service';
 
@@ -18,7 +17,7 @@ describe('Car Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [HttpClientTestingModule],
     });
     expectedResult = null;
     service = TestBed.inject(CarService);
@@ -38,6 +37,7 @@ describe('Car Service', () => {
     });
 
     it('should create a Car', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const car = { ...sampleWithNewData };
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
@@ -165,7 +165,7 @@ describe('Car Service', () => {
       });
 
       it('Should return false if one entity is null', () => {
-        const entity1 = { id: 30624 };
+        const entity1 = { id: 123 };
         const entity2 = null;
 
         const compareResult1 = service.compareCar(entity1, entity2);
@@ -176,8 +176,8 @@ describe('Car Service', () => {
       });
 
       it('Should return false if primaryKey differs', () => {
-        const entity1 = { id: 30624 };
-        const entity2 = { id: 14019 };
+        const entity1 = { id: 123 };
+        const entity2 = { id: 456 };
 
         const compareResult1 = service.compareCar(entity1, entity2);
         const compareResult2 = service.compareCar(entity2, entity1);
@@ -187,8 +187,8 @@ describe('Car Service', () => {
       });
 
       it('Should return false if primaryKey matches', () => {
-        const entity1 = { id: 30624 };
-        const entity2 = { id: 30624 };
+        const entity1 = { id: 123 };
+        const entity2 = { id: 123 };
 
         const compareResult1 = service.compareCar(entity1, entity2);
         const compareResult2 = service.compareCar(entity2, entity1);

@@ -1,28 +1,30 @@
-import { inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
-import { ActivatedRouteSnapshot, Router } from '@angular/router';
-import { EMPTY, Observable, of } from 'rxjs';
+import { Resolve, ActivatedRouteSnapshot, Router } from '@angular/router';
+import { Observable, of, EMPTY } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
 import { IClient } from '../client.model';
 import { ClientService } from '../service/client.service';
 
-const clientResolve = (route: ActivatedRouteSnapshot): Observable<null | IClient> => {
-  const id = route.params.id;
-  if (id) {
-    return inject(ClientService)
-      .find(id)
-      .pipe(
+@Injectable({ providedIn: 'root' })
+export class ClientRoutingResolveService implements Resolve<IClient | null> {
+  constructor(protected service: ClientService, protected router: Router) {}
+
+  resolve(route: ActivatedRouteSnapshot): Observable<IClient | null | never> {
+    const id = route.params['id'];
+    if (id) {
+      return this.service.find(id).pipe(
         mergeMap((client: HttpResponse<IClient>) => {
           if (client.body) {
             return of(client.body);
+          } else {
+            this.router.navigate(['404']);
+            return EMPTY;
           }
-          inject(Router).navigate(['404']);
-          return EMPTY;
-        }),
+        })
       );
+    }
+    return of(null);
   }
-  return of(null);
-};
-
-export default clientResolve;
+}

@@ -6,7 +6,8 @@ import com.ar.edu.um.taccetta.cars.repository.ManufacturerRepository;
 import com.ar.edu.um.taccetta.cars.service.criteria.ManufacturerCriteria;
 import com.ar.edu.um.taccetta.cars.service.dto.ManufacturerDTO;
 import com.ar.edu.um.taccetta.cars.service.mapper.ManufacturerMapper;
-import jakarta.persistence.criteria.JoinType;
+import java.util.List;
+import javax.persistence.criteria.JoinType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,13 +21,13 @@ import tech.jhipster.service.QueryService;
  * Service for executing complex queries for {@link Manufacturer} entities in the database.
  * The main input is a {@link ManufacturerCriteria} which gets converted to {@link Specification},
  * in a way that all the filters must apply.
- * It returns a {@link Page} of {@link ManufacturerDTO} which fulfills the criteria.
+ * It returns a {@link List} of {@link ManufacturerDTO} or a {@link Page} of {@link ManufacturerDTO} which fulfills the criteria.
  */
 @Service
 @Transactional(readOnly = true)
 public class ManufacturerQueryService extends QueryService<Manufacturer> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ManufacturerQueryService.class);
+    private final Logger log = LoggerFactory.getLogger(ManufacturerQueryService.class);
 
     private final ManufacturerRepository manufacturerRepository;
 
@@ -38,6 +39,18 @@ public class ManufacturerQueryService extends QueryService<Manufacturer> {
     }
 
     /**
+     * Return a {@link List} of {@link ManufacturerDTO} which matches the criteria from the database.
+     * @param criteria The object which holds all the filters, which the entities should match.
+     * @return the matching entities.
+     */
+    @Transactional(readOnly = true)
+    public List<ManufacturerDTO> findByCriteria(ManufacturerCriteria criteria) {
+        log.debug("find by criteria : {}", criteria);
+        final Specification<Manufacturer> specification = createSpecification(criteria);
+        return manufacturerMapper.toDto(manufacturerRepository.findAll(specification));
+    }
+
+    /**
      * Return a {@link Page} of {@link ManufacturerDTO} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @param page The page, which should be returned.
@@ -45,7 +58,7 @@ public class ManufacturerQueryService extends QueryService<Manufacturer> {
      */
     @Transactional(readOnly = true)
     public Page<ManufacturerDTO> findByCriteria(ManufacturerCriteria criteria, Pageable page) {
-        LOG.debug("find by criteria : {}, page: {}", criteria, page);
+        log.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<Manufacturer> specification = createSpecification(criteria);
         return manufacturerRepository.findAll(specification, page).map(manufacturerMapper::toDto);
     }
@@ -57,7 +70,7 @@ public class ManufacturerQueryService extends QueryService<Manufacturer> {
      */
     @Transactional(readOnly = true)
     public long countByCriteria(ManufacturerCriteria criteria) {
-        LOG.debug("count by criteria : {}", criteria);
+        log.debug("count by criteria : {}", criteria);
         final Specification<Manufacturer> specification = createSpecification(criteria);
         return manufacturerRepository.count(specification);
     }
@@ -79,11 +92,6 @@ public class ManufacturerQueryService extends QueryService<Manufacturer> {
             }
             if (criteria.getName() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getName(), Manufacturer_.name));
-            }
-            if (criteria.getCarId() != null) {
-                specification = specification.and(
-                    buildSpecification(criteria.getCarId(), root -> root.join(Manufacturer_.car, JoinType.LEFT).get(Car_.id))
-                );
             }
         }
         return specification;

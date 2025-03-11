@@ -1,21 +1,17 @@
-import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import SharedModule from 'app/shared/shared.module';
-import { ITEM_DELETED_EVENT } from 'app/config/navigation.constants';
 import { ICar } from '../car.model';
 import { CarService } from '../service/car.service';
+import { ITEM_DELETED_EVENT } from 'app/config/navigation.constants';
 
 @Component({
   templateUrl: './car-delete-dialog.component.html',
-  imports: [SharedModule, FormsModule],
 })
 export class CarDeleteDialogComponent {
   car?: ICar;
 
-  protected carService = inject(CarService);
-  protected activeModal = inject(NgbActiveModal);
+  constructor(protected carService: CarService, protected activeModal: NgbActiveModal) {}
 
   cancel(): void {
     this.activeModal.dismiss();

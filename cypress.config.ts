@@ -1,6 +1,6 @@
 import { defineConfig } from 'cypress';
 
-export default defineConfig({
+export const defaultConfig = {
   video: false,
   fixturesFolder: 'src/test/javascript/cypress/fixtures',
   screenshotsFolder: 'target/cypress/screenshots',
@@ -13,17 +13,20 @@ export default defineConfig({
   env: {
     authenticationUrl: '/api/authenticate',
     jwtStorageName: 'jhi-authenticationToken',
+    E2E_USERNAME: 'admin',
+    E2E_PASSWORD: 'admin',
   },
   e2e: {
     // We've imported your old cypress plugins here.
     // You may want to clean this up later by importing these.
-    async setupNodeEvents(on, config) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    async setupNodeEvents(on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions) {
       return (await import('./src/test/javascript/cypress/plugins/index')).default(on, config);
     },
     baseUrl: 'http://localhost:8080/',
     specPattern: 'src/test/javascript/cypress/e2e/**/*.cy.ts',
     supportFile: 'src/test/javascript/cypress/support/index.ts',
-    experimentalRunAllSpecs: true,
+    experimentalSessionAndOrigin: true,
   },
-});
+};
+
+export default defineConfig(defaultConfig);

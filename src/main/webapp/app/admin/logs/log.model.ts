@@ -7,12 +7,9 @@ export interface Logger {
 
 export interface LoggersResponse {
   levels: Level[];
-  loggers: Record<string, Logger>;
+  loggers: { [key: string]: Logger };
 }
 
 export class Log {
-  constructor(
-    public name: string,
-    public level: Level,
-  ) {}
+  constructor(public name: string, public level: Level) {}
 }

@@ -1,50 +1,44 @@
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 
 import {
-  accountMenuSelector,
+  navbarSelector,
   adminMenuSelector,
-  entityItemSelector,
+  accountMenuSelector,
+  registerItemSelector,
   loginItemSelector,
   logoutItemSelector,
-  navbarSelector,
-  passwordItemSelector,
-  registerItemSelector,
   settingsItemSelector,
+  passwordItemSelector,
+  entityItemSelector,
 } from './commands';
 
 Cypress.Commands.add('clickOnLoginItem', () => {
-  cy.get(navbarSelector).get(accountMenuSelector).click();
-  return cy.get(navbarSelector).get(accountMenuSelector).get(loginItemSelector).click();
+  return cy.get(navbarSelector).get(accountMenuSelector).click().get(loginItemSelector).click();
 });
 
 Cypress.Commands.add('clickOnLogoutItem', () => {
-  cy.get(navbarSelector).get(accountMenuSelector).click();
-  return cy.get(navbarSelector).get(accountMenuSelector).get(logoutItemSelector).click();
+  return cy.get(navbarSelector).get(accountMenuSelector).click().get(logoutItemSelector).click();
 });
 
 Cypress.Commands.add('clickOnRegisterItem', () => {
-  cy.get(navbarSelector).get(accountMenuSelector).click();
-  return cy.get(navbarSelector).get(accountMenuSelector).get(registerItemSelector).click();
+  return cy.get(navbarSelector).get(accountMenuSelector).click().get(registerItemSelector).click();
 });
 
 Cypress.Commands.add('clickOnSettingsItem', () => {
-  cy.get(navbarSelector).get(accountMenuSelector).click();
-  return cy.get(navbarSelector).get(accountMenuSelector).get(settingsItemSelector).click();
+  return cy.get(navbarSelector).get(accountMenuSelector).click().get(settingsItemSelector).click();
 });
 
 Cypress.Commands.add('clickOnPasswordItem', () => {
-  cy.get(navbarSelector).get(accountMenuSelector).click();
-  return cy.get(navbarSelector).get(accountMenuSelector).get(passwordItemSelector).click();
+  return cy.get(navbarSelector).get(accountMenuSelector).click().get(passwordItemSelector).click();
 });
 
 Cypress.Commands.add('clickOnAdminMenuItem', (item: string) => {
-  cy.get(navbarSelector).get(adminMenuSelector).click();
-  return cy.get(navbarSelector).get(adminMenuSelector).get(`.dropdown-item[href="/admin/${item}"]`).click();
+  return cy.get(navbarSelector).get(adminMenuSelector).click().get(`.dropdown-item[href="/admin/${item}"]`).click();
 });
 
 Cypress.Commands.add('clickOnEntityMenuItem', (entityName: string) => {
-  cy.get(navbarSelector).get(entityItemSelector).click();
-  return cy.get(navbarSelector).get(entityItemSelector).get(`.dropdown-item[href="/${entityName}"]`).click({ force: true });
+  return cy.get(navbarSelector).get(entityItemSelector).click().get(`.dropdown-item[href="/${entityName}"]`).click({ force: true });
 });
 
 declare global {
@@ -61,5 +55,5 @@ declare global {
   }
 }
 
-// Convert this to a module instead of a script (allows import/export)
+// Convert this to a module instead of script (allows import/export)
 export {};

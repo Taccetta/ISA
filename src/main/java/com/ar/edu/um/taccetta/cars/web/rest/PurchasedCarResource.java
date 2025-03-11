@@ -28,10 +28,10 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link com.ar.edu.um.taccetta.cars.domain.PurchasedCar}.
  */
 @RestController
-@RequestMapping("/api/purchased-cars")
+@RequestMapping("/api")
 public class PurchasedCarResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PurchasedCarResource.class);
+    private final Logger log = LoggerFactory.getLogger(PurchasedCarResource.class);
 
     private static final String ENTITY_NAME = "purchasedCar";
 
@@ -61,16 +61,17 @@ public class PurchasedCarResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new purchasedCarDTO, or with status {@code 400 (Bad Request)} if the purchasedCar has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("")
+    @PostMapping("/purchased-cars")
     public ResponseEntity<PurchasedCarDTO> createPurchasedCar(@RequestBody PurchasedCarDTO purchasedCarDTO) throws URISyntaxException {
-        LOG.debug("REST request to save PurchasedCar : {}", purchasedCarDTO);
+        log.debug("REST request to save PurchasedCar : {}", purchasedCarDTO);
         if (purchasedCarDTO.getId() != null) {
             throw new BadRequestAlertException("A new purchasedCar cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        purchasedCarDTO = purchasedCarService.save(purchasedCarDTO);
-        return ResponseEntity.created(new URI("/api/purchased-cars/" + purchasedCarDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, purchasedCarDTO.getId().toString()))
-            .body(purchasedCarDTO);
+        PurchasedCarDTO result = purchasedCarService.save(purchasedCarDTO);
+        return ResponseEntity
+            .created(new URI("/api/purchased-cars/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -83,12 +84,12 @@ public class PurchasedCarResource {
      * or with status {@code 500 (Internal Server Error)} if the purchasedCarDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/purchased-cars/{id}")
     public ResponseEntity<PurchasedCarDTO> updatePurchasedCar(
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody PurchasedCarDTO purchasedCarDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to update PurchasedCar : {}, {}", id, purchasedCarDTO);
+        log.debug("REST request to update PurchasedCar : {}, {}", id, purchasedCarDTO);
         if (purchasedCarDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -100,10 +101,11 @@ public class PurchasedCarResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        purchasedCarDTO = purchasedCarService.update(purchasedCarDTO);
-        return ResponseEntity.ok()
+        PurchasedCarDTO result = purchasedCarService.update(purchasedCarDTO);
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, purchasedCarDTO.getId().toString()))
-            .body(purchasedCarDTO);
+            .body(result);
     }
 
     /**
@@ -117,12 +119,12 @@ public class PurchasedCarResource {
      * or with status {@code 500 (Internal Server Error)} if the purchasedCarDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/purchased-cars/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<PurchasedCarDTO> partialUpdatePurchasedCar(
         @PathVariable(value = "id", required = false) final Long id,
         @RequestBody PurchasedCarDTO purchasedCarDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update PurchasedCar partially : {}, {}", id, purchasedCarDTO);
+        log.debug("REST request to partial update PurchasedCar partially : {}, {}", id, purchasedCarDTO);
         if (purchasedCarDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -149,13 +151,12 @@ public class PurchasedCarResource {
      * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of purchasedCars in body.
      */
-    @GetMapping("")
+    @GetMapping("/purchased-cars")
     public ResponseEntity<List<PurchasedCarDTO>> getAllPurchasedCars(
         PurchasedCarCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable
     ) {
-        LOG.debug("REST request to get PurchasedCars by criteria: {}", criteria);
-
+        log.debug("REST request to get PurchasedCars by criteria: {}", criteria);
         Page<PurchasedCarDTO> page = purchasedCarQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -167,9 +168,9 @@ public class PurchasedCarResource {
      * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
      */
-    @GetMapping("/count")
+    @GetMapping("/purchased-cars/count")
     public ResponseEntity<Long> countPurchasedCars(PurchasedCarCriteria criteria) {
-        LOG.debug("REST request to count PurchasedCars by criteria: {}", criteria);
+        log.debug("REST request to count PurchasedCars by criteria: {}", criteria);
         return ResponseEntity.ok().body(purchasedCarQueryService.countByCriteria(criteria));
     }
 
@@ -179,9 +180,9 @@ public class PurchasedCarResource {
      * @param id the id of the purchasedCarDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the purchasedCarDTO, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<PurchasedCarDTO> getPurchasedCar(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get PurchasedCar : {}", id);
+    @GetMapping("/purchased-cars/{id}")
+    public ResponseEntity<PurchasedCarDTO> getPurchasedCar(@PathVariable Long id) {
+        log.debug("REST request to get PurchasedCar : {}", id);
         Optional<PurchasedCarDTO> purchasedCarDTO = purchasedCarService.findOne(id);
         return ResponseUtil.wrapOrNotFound(purchasedCarDTO);
     }
@@ -192,11 +193,12 @@ public class PurchasedCarResource {
      * @param id the id of the purchasedCarDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePurchasedCar(@PathVariable("id") Long id) {
-        LOG.debug("REST request to delete PurchasedCar : {}", id);
+    @DeleteMapping("/purchased-cars/{id}")
+    public ResponseEntity<Void> deletePurchasedCar(@PathVariable Long id) {
+        log.debug("REST request to delete PurchasedCar : {}", id);
         purchasedCarService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

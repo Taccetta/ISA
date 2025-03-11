@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -14,10 +14,9 @@ export type EntityArrayResponseType = HttpResponse<ICar[]>;
 
 @Injectable({ providedIn: 'root' })
 export class CarService {
-  protected readonly http = inject(HttpClient);
-  protected readonly applicationConfigService = inject(ApplicationConfigService);
-
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/cars');
+
+  constructor(protected http: HttpClient, protected applicationConfigService: ApplicationConfigService) {}
 
   create(car: NewCar): Observable<EntityResponseType> {
     return this.http.post<ICar>(this.resourceUrl, car, { observe: 'response' });
@@ -55,7 +54,7 @@ export class CarService {
   addCarToCollectionIfMissing<Type extends Pick<ICar, 'id'>>(carCollection: Type[], ...carsToCheck: (Type | null | undefined)[]): Type[] {
     const cars: Type[] = carsToCheck.filter(isPresent);
     if (cars.length > 0) {
-      const carCollectionIdentifiers = carCollection.map(carItem => this.getCarIdentifier(carItem));
+      const carCollectionIdentifiers = carCollection.map(carItem => this.getCarIdentifier(carItem)!);
       const carsToAdd = cars.filter(carItem => {
         const carIdentifier = this.getCarIdentifier(carItem);
         if (carCollectionIdentifiers.includes(carIdentifier)) {

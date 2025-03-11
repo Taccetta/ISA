@@ -1,9 +1,8 @@
 package com.ar.edu.um.taccetta.cars.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 
 /**
  * A Car.
@@ -34,14 +33,9 @@ public class Car implements Serializable {
     @Column(name = "available", nullable = false)
     private Integer available;
 
-    @JsonIgnoreProperties(value = { "car" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(unique = true)
     private Manufacturer manufacturer;
-
-    @JsonIgnoreProperties(value = { "car", "client" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "car")
-    private PurchasedCar purchasedCar;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -110,25 +104,6 @@ public class Car implements Serializable {
         return this;
     }
 
-    public PurchasedCar getPurchasedCar() {
-        return this.purchasedCar;
-    }
-
-    public void setPurchasedCar(PurchasedCar purchasedCar) {
-        if (this.purchasedCar != null) {
-            this.purchasedCar.setCar(null);
-        }
-        if (purchasedCar != null) {
-            purchasedCar.setCar(this);
-        }
-        this.purchasedCar = purchasedCar;
-    }
-
-    public Car purchasedCar(PurchasedCar purchasedCar) {
-        this.setPurchasedCar(purchasedCar);
-        return this;
-    }
-
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -139,7 +114,7 @@ public class Car implements Serializable {
         if (!(o instanceof Car)) {
             return false;
         }
-        return getId() != null && getId().equals(((Car) o).getId());
+        return id != null && id.equals(((Car) o).id);
     }
 
     @Override

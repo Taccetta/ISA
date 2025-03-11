@@ -1,24 +1,22 @@
-import NavbarItem from 'app/layouts/navbar/navbar-item.model';
-
-export const EntityNavbarItems: NavbarItem[] = [
+export const EntityNavbarItems = [
   {
     name: 'Manufacturer',
-    route: '/manufacturer',
+    route: 'manufacturer',
     translationKey: 'global.menu.entities.manufacturer',
   },
   {
     name: 'Client',
-    route: '/client',
+    route: 'client',
     translationKey: 'global.menu.entities.client',
   },
   {
     name: 'Car',
-    route: '/car',
+    route: 'car',
     translationKey: 'global.menu.entities.car',
   },
   {
     name: 'PurchasedCar',
-    route: '/purchased-car',
+    route: 'purchased-car',
     translationKey: 'global.menu.entities.purchasedCar',
   },
 ];

@@ -6,17 +6,18 @@ import static org.junit.Assert.assertNull;
 import com.ar.edu.um.taccetta.cars.domain.Car;
 import com.ar.edu.um.taccetta.cars.domain.Manufacturer;
 import com.ar.edu.um.taccetta.cars.service.dto.CarDTO;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
 class CarMapperTest {
 
-    @Autowired
     private CarMapper carMapper;
 
-    //Testea el mapeo de CarDTO a Car
+    @BeforeEach
+    public void setUp() {
+        carMapper = new CarMapperImpl();
+    }
+
     @Test
     public void testCarDtoToEntity() {
         CarDTO carDTO = new CarDTO();
@@ -35,7 +36,6 @@ class CarMapperTest {
         assertEquals(car.getAvailable(), carDTO.getAvailable());
     }
 
-    //Testea el mapeo de Car a CarDTO
     @Test
     public void testCarEntitytoDto() {
         Car car = new Car();
@@ -56,7 +56,6 @@ class CarMapperTest {
         assertEquals(car.getManufacturer().getId(), carDTO.getManufacturer().getId());
     }
 
-    //Testea el mapeo de CarDTO a Car cuando los valores son nulos
     @Test
     public void testNullCarDtoToEntity() {
         CarDTO carDTO = new CarDTO();

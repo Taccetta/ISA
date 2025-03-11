@@ -6,7 +6,8 @@ import com.ar.edu.um.taccetta.cars.repository.CarRepository;
 import com.ar.edu.um.taccetta.cars.service.criteria.CarCriteria;
 import com.ar.edu.um.taccetta.cars.service.dto.CarDTO;
 import com.ar.edu.um.taccetta.cars.service.mapper.CarMapper;
-import jakarta.persistence.criteria.JoinType;
+import java.util.List;
+import javax.persistence.criteria.JoinType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,13 +21,13 @@ import tech.jhipster.service.QueryService;
  * Service for executing complex queries for {@link Car} entities in the database.
  * The main input is a {@link CarCriteria} which gets converted to {@link Specification},
  * in a way that all the filters must apply.
- * It returns a {@link Page} of {@link CarDTO} which fulfills the criteria.
+ * It returns a {@link List} of {@link CarDTO} or a {@link Page} of {@link CarDTO} which fulfills the criteria.
  */
 @Service
 @Transactional(readOnly = true)
 public class CarQueryService extends QueryService<Car> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CarQueryService.class);
+    private final Logger log = LoggerFactory.getLogger(CarQueryService.class);
 
     private final CarRepository carRepository;
 
@@ -38,6 +39,18 @@ public class CarQueryService extends QueryService<Car> {
     }
 
     /**
+     * Return a {@link List} of {@link CarDTO} which matches the criteria from the database.
+     * @param criteria The object which holds all the filters, which the entities should match.
+     * @return the matching entities.
+     */
+    @Transactional(readOnly = true)
+    public List<CarDTO> findByCriteria(CarCriteria criteria) {
+        log.debug("find by criteria : {}", criteria);
+        final Specification<Car> specification = createSpecification(criteria);
+        return carMapper.toDto(carRepository.findAll(specification));
+    }
+
+    /**
      * Return a {@link Page} of {@link CarDTO} which matches the criteria from the database.
      * @param criteria The object which holds all the filters, which the entities should match.
      * @param page The page, which should be returned.
@@ -45,7 +58,7 @@ public class CarQueryService extends QueryService<Car> {
      */
     @Transactional(readOnly = true)
     public Page<CarDTO> findByCriteria(CarCriteria criteria, Pageable page) {
-        LOG.debug("find by criteria : {}, page: {}", criteria, page);
+        log.debug("find by criteria : {}, page: {}", criteria, page);
         final Specification<Car> specification = createSpecification(criteria);
         return carRepository.findAll(specification, page).map(carMapper::toDto);
     }
@@ -57,7 +70,7 @@ public class CarQueryService extends QueryService<Car> {
      */
     @Transactional(readOnly = true)
     public long countByCriteria(CarCriteria criteria) {
-        LOG.debug("count by criteria : {}", criteria);
+        log.debug("count by criteria : {}", criteria);
         final Specification<Car> specification = createSpecification(criteria);
         return carRepository.count(specification);
     }
@@ -87,18 +100,13 @@ public class CarQueryService extends QueryService<Car> {
                 specification = specification.and(buildRangeSpecification(criteria.getAvailable(), Car_.available));
             }
             if (criteria.getManufacturerId() != null) {
-                specification = specification.and(
-                    buildSpecification(criteria.getManufacturerId(), root ->
-                        root.join(Car_.manufacturer, JoinType.LEFT).get(Manufacturer_.id)
-                    )
-                );
-            }
-            if (criteria.getPurchasedCarId() != null) {
-                specification = specification.and(
-                    buildSpecification(criteria.getPurchasedCarId(), root ->
-                        root.join(Car_.purchasedCar, JoinType.LEFT).get(PurchasedCar_.id)
-                    )
-                );
+                specification =
+                    specification.and(
+                        buildSpecification(
+                            criteria.getManufacturerId(),
+                            root -> root.join(Car_.manufacturer, JoinType.LEFT).get(Manufacturer_.id)
+                        )
+                    );
             }
         }
         return specification;

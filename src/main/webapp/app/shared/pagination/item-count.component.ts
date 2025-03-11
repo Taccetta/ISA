@@ -1,42 +1,31 @@
-import { Component, computed, input } from '@angular/core';
-import TranslateDirective from '../language/translate.directive';
+import { Component, Input } from '@angular/core';
 
 /**
  * A component that will take care of item count statistics of a pagination.
  */
 @Component({
   selector: 'jhi-item-count',
-  template: ` <div jhiTranslate="global.item-count" [translateValues]="{ first: first(), second: second(), total: total() }"></div> `,
-  imports: [TranslateDirective],
+  template: ` <div jhiTranslate="global.item-count" [translateValues]="{ first: first, second: second, total: total }"></div> `,
 })
-export default class ItemCountComponent {
+export class ItemCountComponent {
   /**
    * @param params  Contains parameters for component:
    *                    page          Current page number
    *                    totalItems    Total number of items
    *                    itemsPerPage  Number of items per page
    */
-  params = input<{
-    page?: number;
-    totalItems?: number;
-    itemsPerPage?: number;
-  }>();
-
-  first = computed(() => {
-    const params = this.params();
-    if (params?.page && params.totalItems !== undefined && params.itemsPerPage) {
-      return (params.page - 1) * params.itemsPerPage + 1;
+  @Input() set params(params: { page?: number; totalItems?: number; itemsPerPage?: number }) {
+    if (params.page && params.totalItems !== undefined && params.itemsPerPage) {
+      this.first = (params.page - 1) * params.itemsPerPage + 1;
+      this.second = params.page * params.itemsPerPage < params.totalItems ? params.page * params.itemsPerPage : params.totalItems;
+    } else {
+      this.first = undefined;
+      this.second = undefined;
     }
-    return undefined;
-  });
+    this.total = params.totalItems;
+  }
 
-  second = computed(() => {
-    const params = this.params();
-    if (params?.page && params.totalItems !== undefined && params.itemsPerPage) {
-      return params.page * params.itemsPerPage < params.totalItems ? params.page * params.itemsPerPage : params.totalItems;
-    }
-    return undefined;
-  });
-
-  total = computed(() => this.params()?.totalItems);
+  first?: number;
+  second?: number;
+  total?: number;
 }

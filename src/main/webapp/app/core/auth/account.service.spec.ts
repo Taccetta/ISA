@@ -1,11 +1,12 @@
 jest.mock('app/core/auth/state-storage.service');
 
 import { Router } from '@angular/router';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { InterpolatableTranslationObject, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
+import { NgxWebstorageModule, SessionStorageService } from 'ngx-webstorage';
 
 import { Account } from 'app/core/auth/account.model';
 import { Authority } from 'app/config/authority.constants';
@@ -27,8 +28,6 @@ function accountWithAuthorities(authorities: string[]): Account {
   };
 }
 
-const mockFn = (value: string | null): jest.Mock<string | null> => jest.fn(() => value);
-
 describe('Account Service', () => {
   let service: AccountService;
   let applicationConfigService: ApplicationConfigService;
@@ -36,11 +35,12 @@ describe('Account Service', () => {
   let mockStorageService: StateStorageService;
   let mockRouter: Router;
   let mockTranslateService: TranslateService;
+  let sessionStorageService: SessionStorageService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting(), StateStorageService],
+      imports: [HttpClientTestingModule, RouterTestingModule.withRoutes([]), TranslateModule.forRoot(), NgxWebstorageModule.forRoot()],
+      providers: [StateStorageService],
     });
 
     service = TestBed.inject(AccountService);
@@ -51,7 +51,8 @@ describe('Account Service', () => {
     jest.spyOn(mockRouter, 'navigateByUrl').mockImplementation(() => Promise.resolve(true));
 
     mockTranslateService = TestBed.inject(TranslateService);
-    jest.spyOn(mockTranslateService, 'use').mockImplementation(() => of({} as InterpolatableTranslationObject));
+    jest.spyOn(mockTranslateService, 'use').mockImplementation(() => of(''));
+    sessionStorageService = TestBed.inject(SessionStorageService);
   });
 
   afterEach(() => {
@@ -135,7 +136,7 @@ describe('Account Service', () => {
     describe('should change the language on authentication if necessary', () => {
       it('should change language if user has not changed language manually', () => {
         // GIVEN
-        mockStorageService.getLocale = mockFn(null);
+        sessionStorageService.retrieve = jest.fn(key => (key === 'locale' ? undefined : 'otherSessionStorageValue'));
 
         // WHEN
         service.identity().subscribe();
@@ -147,7 +148,7 @@ describe('Account Service', () => {
 
       it('should not change language if user has changed language manually', () => {
         // GIVEN
-        mockStorageService.getLocale = mockFn('sessionLang');
+        sessionStorageService.retrieve = jest.fn(key => (key === 'locale' ? 'sessionLang' : undefined));
 
         // WHEN
         service.identity().subscribe();
@@ -161,7 +162,7 @@ describe('Account Service', () => {
     describe('navigateToStoredUrl', () => {
       it('should navigate to the previous stored url post successful authentication', () => {
         // GIVEN
-        mockStorageService.getUrl = mockFn('admin/users?page=0');
+        mockStorageService.getUrl = jest.fn(() => 'admin/users?page=0');
 
         // WHEN
         service.identity().subscribe();
@@ -176,7 +177,7 @@ describe('Account Service', () => {
       it('should not navigate to the previous stored url when authentication fails', () => {
         // WHEN
         service.identity().subscribe();
-        httpMock.expectOne({ method: 'GET' }).error(new ProgressEvent(''));
+        httpMock.expectOne({ method: 'GET' }).error(new ErrorEvent(''));
 
         // THEN
         expect(mockStorageService.getUrl).not.toHaveBeenCalled();
@@ -186,7 +187,7 @@ describe('Account Service', () => {
 
       it('should not navigate to the previous stored url when no such url exists post successful authentication', () => {
         // GIVEN
-        mockStorageService.getUrl = mockFn(null);
+        mockStorageService.getUrl = jest.fn(() => null);
 
         // WHEN
         service.identity().subscribe();

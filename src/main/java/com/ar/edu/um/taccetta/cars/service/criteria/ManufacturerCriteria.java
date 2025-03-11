@@ -2,8 +2,7 @@ package com.ar.edu.um.taccetta.cars.service.criteria;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.Optional;
-import org.springdoc.core.annotations.ParameterObject;
+import org.springdoc.api.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
 import tech.jhipster.service.filter.*;
 
@@ -26,16 +25,13 @@ public class ManufacturerCriteria implements Serializable, Criteria {
 
     private StringFilter name;
 
-    private LongFilter carId;
-
     private Boolean distinct;
 
     public ManufacturerCriteria() {}
 
     public ManufacturerCriteria(ManufacturerCriteria other) {
-        this.id = other.optionalId().map(LongFilter::copy).orElse(null);
-        this.name = other.optionalName().map(StringFilter::copy).orElse(null);
-        this.carId = other.optionalCarId().map(LongFilter::copy).orElse(null);
+        this.id = other.id == null ? null : other.id.copy();
+        this.name = other.name == null ? null : other.name.copy();
         this.distinct = other.distinct;
     }
 
@@ -48,13 +44,9 @@ public class ManufacturerCriteria implements Serializable, Criteria {
         return id;
     }
 
-    public Optional<LongFilter> optionalId() {
-        return Optional.ofNullable(id);
-    }
-
     public LongFilter id() {
         if (id == null) {
-            setId(new LongFilter());
+            id = new LongFilter();
         }
         return id;
     }
@@ -67,13 +59,9 @@ public class ManufacturerCriteria implements Serializable, Criteria {
         return name;
     }
 
-    public Optional<StringFilter> optionalName() {
-        return Optional.ofNullable(name);
-    }
-
     public StringFilter name() {
         if (name == null) {
-            setName(new StringFilter());
+            name = new StringFilter();
         }
         return name;
     }
@@ -82,37 +70,7 @@ public class ManufacturerCriteria implements Serializable, Criteria {
         this.name = name;
     }
 
-    public LongFilter getCarId() {
-        return carId;
-    }
-
-    public Optional<LongFilter> optionalCarId() {
-        return Optional.ofNullable(carId);
-    }
-
-    public LongFilter carId() {
-        if (carId == null) {
-            setCarId(new LongFilter());
-        }
-        return carId;
-    }
-
-    public void setCarId(LongFilter carId) {
-        this.carId = carId;
-    }
-
     public Boolean getDistinct() {
-        return distinct;
-    }
-
-    public Optional<Boolean> optionalDistinct() {
-        return Optional.ofNullable(distinct);
-    }
-
-    public Boolean distinct() {
-        if (distinct == null) {
-            setDistinct(true);
-        }
         return distinct;
     }
 
@@ -129,27 +87,21 @@ public class ManufacturerCriteria implements Serializable, Criteria {
             return false;
         }
         final ManufacturerCriteria that = (ManufacturerCriteria) o;
-        return (
-            Objects.equals(id, that.id) &&
-            Objects.equals(name, that.name) &&
-            Objects.equals(carId, that.carId) &&
-            Objects.equals(distinct, that.distinct)
-        );
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(distinct, that.distinct);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, carId, distinct);
+        return Objects.hash(id, name, distinct);
     }
 
     // prettier-ignore
     @Override
     public String toString() {
         return "ManufacturerCriteria{" +
-            optionalId().map(f -> "id=" + f + ", ").orElse("") +
-            optionalName().map(f -> "name=" + f + ", ").orElse("") +
-            optionalCarId().map(f -> "carId=" + f + ", ").orElse("") +
-            optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
-        "}";
+            (id != null ? "id=" + id + ", " : "") +
+            (name != null ? "name=" + name + ", " : "") +
+            (distinct != null ? "distinct=" + distinct + ", " : "") +
+            "}";
     }
 }

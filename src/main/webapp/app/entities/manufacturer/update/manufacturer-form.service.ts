@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { IManufacturer, NewManufacturer } from '../manufacturer.model';
 
@@ -36,7 +36,7 @@ export class ManufacturerFormService {
         {
           nonNullable: true,
           validators: [Validators.required],
-        },
+        }
       ),
       name: new FormControl(manufacturerRawValue.name, {
         validators: [Validators.required, Validators.maxLength(100)],
@@ -54,7 +54,7 @@ export class ManufacturerFormService {
       {
         ...manufacturerRawValue,
         id: { value: manufacturerRawValue.id, disabled: true },
-      } as any /* cast to workaround https://github.com/angular/angular/issues/46458 */,
+      } as any /* cast to workaround https://github.com/angular/angular/issues/46458 */
     );
   }
 

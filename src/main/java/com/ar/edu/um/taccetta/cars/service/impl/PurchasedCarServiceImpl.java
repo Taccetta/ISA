@@ -8,17 +8,19 @@ import com.ar.edu.um.taccetta.cars.service.mapper.PurchasedCarMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service Implementation for managing {@link com.ar.edu.um.taccetta.cars.domain.PurchasedCar}.
+ * Service Implementation for managing {@link PurchasedCar}.
  */
 @Service
 @Transactional
 public class PurchasedCarServiceImpl implements PurchasedCarService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PurchasedCarServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(PurchasedCarServiceImpl.class);
 
     private final PurchasedCarRepository purchasedCarRepository;
 
@@ -31,7 +33,7 @@ public class PurchasedCarServiceImpl implements PurchasedCarService {
 
     @Override
     public PurchasedCarDTO save(PurchasedCarDTO purchasedCarDTO) {
-        LOG.debug("Request to save PurchasedCar : {}", purchasedCarDTO);
+        log.debug("Request to save PurchasedCar : {}", purchasedCarDTO);
         PurchasedCar purchasedCar = purchasedCarMapper.toEntity(purchasedCarDTO);
         purchasedCar = purchasedCarRepository.save(purchasedCar);
         return purchasedCarMapper.toDto(purchasedCar);
@@ -39,7 +41,7 @@ public class PurchasedCarServiceImpl implements PurchasedCarService {
 
     @Override
     public PurchasedCarDTO update(PurchasedCarDTO purchasedCarDTO) {
-        LOG.debug("Request to update PurchasedCar : {}", purchasedCarDTO);
+        log.debug("Request to update PurchasedCar : {}", purchasedCarDTO);
         PurchasedCar purchasedCar = purchasedCarMapper.toEntity(purchasedCarDTO);
         purchasedCar = purchasedCarRepository.save(purchasedCar);
         return purchasedCarMapper.toDto(purchasedCar);
@@ -47,7 +49,7 @@ public class PurchasedCarServiceImpl implements PurchasedCarService {
 
     @Override
     public Optional<PurchasedCarDTO> partialUpdate(PurchasedCarDTO purchasedCarDTO) {
-        LOG.debug("Request to partially update PurchasedCar : {}", purchasedCarDTO);
+        log.debug("Request to partially update PurchasedCar : {}", purchasedCarDTO);
 
         return purchasedCarRepository
             .findById(purchasedCarDTO.getId())
@@ -62,14 +64,25 @@ public class PurchasedCarServiceImpl implements PurchasedCarService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<PurchasedCarDTO> findAll(Pageable pageable) {
+        log.debug("Request to get all PurchasedCars");
+        return purchasedCarRepository.findAll(pageable).map(purchasedCarMapper::toDto);
+    }
+
+    public Page<PurchasedCarDTO> findAllWithEagerRelationships(Pageable pageable) {
+        return purchasedCarRepository.findAllWithEagerRelationships(pageable).map(purchasedCarMapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<PurchasedCarDTO> findOne(Long id) {
-        LOG.debug("Request to get PurchasedCar : {}", id);
-        return purchasedCarRepository.findById(id).map(purchasedCarMapper::toDto);
+        log.debug("Request to get PurchasedCar : {}", id);
+        return purchasedCarRepository.findOneWithEagerRelationships(id).map(purchasedCarMapper::toDto);
     }
 
     @Override
     public void delete(Long id) {
-        LOG.debug("Request to delete PurchasedCar : {}", id);
+        log.debug("Request to delete PurchasedCar : {}", id);
         purchasedCarRepository.deleteById(id);
     }
 }

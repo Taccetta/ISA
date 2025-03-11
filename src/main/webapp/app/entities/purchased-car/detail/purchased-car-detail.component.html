@@ -1,50 +1,44 @@
 <div class="d-flex justify-content-center">
   <div class="col-8">
-    @if (purchasedCar(); as purchasedCarRef) {
-      <div>
-        <h2 data-cy="purchasedCarDetailsHeading"><span jhiTranslate="carDealershipApp.purchasedCar.detail.title">Purchased Car</span></h2>
+    <div *ngIf="purchasedCar">
+      <h2 data-cy="purchasedCarDetailsHeading"><span jhiTranslate="carDealershipApp.purchasedCar.detail.title">Purchased Car</span></h2>
 
-        <hr />
+      <hr />
 
-        <jhi-alert-error></jhi-alert-error>
+      <jhi-alert-error></jhi-alert-error>
 
-        <jhi-alert></jhi-alert>
+      <jhi-alert></jhi-alert>
 
-        <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="global.field.id">ID</span></dt>
-          <dd>
-            <span>{{ purchasedCarRef.id }}</span>
-          </dd>
-          <dt><span jhiTranslate="carDealershipApp.purchasedCar.purchaseDate">Purchase Date</span></dt>
-          <dd>
-            <span>{{ purchasedCarRef.purchaseDate | formatMediumDate }}</span>
-          </dd>
-          <dt><span jhiTranslate="carDealershipApp.purchasedCar.car">Car</span></dt>
-          <dd>
-            @if (purchasedCar()!.car) {
-              <div>
-                <a [routerLink]="['/car', purchasedCar()!.car?.id, 'view']">{{ purchasedCarRef.car?.id }}</a>
-              </div>
-            }
-          </dd>
-          <dt><span jhiTranslate="carDealershipApp.purchasedCar.client">Client</span></dt>
-          <dd>
-            @if (purchasedCar()!.client) {
-              <div>
-                <a [routerLink]="['/client', purchasedCar()!.client?.id, 'view']">{{ purchasedCarRef.client?.id }}</a>
-              </div>
-            }
-          </dd>
-        </dl>
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ purchasedCar.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="carDealershipApp.purchasedCar.purchaseDate">Purchase Date</span></dt>
+        <dd>
+          <span>{{ purchasedCar.purchaseDate | formatMediumDate }}</span>
+        </dd>
+        <dt><span jhiTranslate="carDealershipApp.purchasedCar.car">Car</span></dt>
+        <dd>
+          <div *ngIf="purchasedCar.car">
+            <a [routerLink]="['/car', purchasedCar.car.id, 'view']">{{ purchasedCar.car.model }}</a>
+          </div>
+        </dd>
+        <dt><span jhiTranslate="carDealershipApp.purchasedCar.client">Client</span></dt>
+        <dd>
+          <div *ngIf="purchasedCar.client">
+            <a [routerLink]="['/client', purchasedCar.client.id, 'view']">{{ purchasedCar.client.email }}</a>
+          </div>
+        </dd>
+      </dl>
 
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
-        </button>
+      <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+        <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Back</span>
+      </button>
 
-        <button type="button" [routerLink]="['/purchased-car', purchasedCarRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
-        </button>
-      </div>
-    }
+      <button type="button" [routerLink]="['/purchased-car', purchasedCar.id, 'edit']" class="btn btn-primary">
+        <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Edit</span>
+      </button>
+    </div>
   </div>
 </div>

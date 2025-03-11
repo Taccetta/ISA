@@ -1,31 +1,28 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
-import SharedModule from 'app/shared/shared.module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { ManufacturerFormService, ManufacturerFormGroup } from './manufacturer-form.service';
 import { IManufacturer } from '../manufacturer.model';
 import { ManufacturerService } from '../service/manufacturer.service';
-import { ManufacturerFormGroup, ManufacturerFormService } from './manufacturer-form.service';
 
 @Component({
   selector: 'jhi-manufacturer-update',
   templateUrl: './manufacturer-update.component.html',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule],
 })
 export class ManufacturerUpdateComponent implements OnInit {
   isSaving = false;
   manufacturer: IManufacturer | null = null;
 
-  protected manufacturerService = inject(ManufacturerService);
-  protected manufacturerFormService = inject(ManufacturerFormService);
-  protected activatedRoute = inject(ActivatedRoute);
-
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ManufacturerFormGroup = this.manufacturerFormService.createManufacturerFormGroup();
+
+  constructor(
+    protected manufacturerService: ManufacturerService,
+    protected manufacturerFormService: ManufacturerFormService,
+    protected activatedRoute: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ manufacturer }) => {

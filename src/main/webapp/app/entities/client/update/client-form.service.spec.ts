@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithNewData, sampleWithRequiredData } from '../client.test-samples';
+import { sampleWithRequiredData, sampleWithNewData } from '../client.test-samples';
 
 import { ClientFormService } from './client-form.service';
 
@@ -25,7 +25,7 @@ describe('Client Form Service', () => {
             email: expect.any(Object),
             address: expect.any(Object),
             phone: expect.any(Object),
-          }),
+          })
         );
       });
 
@@ -40,13 +40,14 @@ describe('Client Form Service', () => {
             email: expect.any(Object),
             address: expect.any(Object),
             phone: expect.any(Object),
-          }),
+          })
         );
       });
     });
 
     describe('getClient', () => {
       it('should return NewClient for default Client initial value', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const formGroup = service.createClientFormGroup(sampleWithNewData);
 
         const client = service.getClient(formGroup) as any;

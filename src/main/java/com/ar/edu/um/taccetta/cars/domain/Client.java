@@ -1,9 +1,8 @@
 package com.ar.edu.um.taccetta.cars.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import java.io.Serializable;
+import javax.persistence.*;
+import javax.validation.constraints.*;
 
 /**
  * A Client.
@@ -41,10 +40,6 @@ public class Client implements Serializable {
     @Size(max = 20)
     @Column(name = "phone", length = 20)
     private String phone;
-
-    @JsonIgnoreProperties(value = { "car", "client" }, allowSetters = true)
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "client")
-    private PurchasedCar purchasedCar;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -126,25 +121,6 @@ public class Client implements Serializable {
         this.phone = phone;
     }
 
-    public PurchasedCar getPurchasedCar() {
-        return this.purchasedCar;
-    }
-
-    public void setPurchasedCar(PurchasedCar purchasedCar) {
-        if (this.purchasedCar != null) {
-            this.purchasedCar.setClient(null);
-        }
-        if (purchasedCar != null) {
-            purchasedCar.setClient(this);
-        }
-        this.purchasedCar = purchasedCar;
-    }
-
-    public Client purchasedCar(PurchasedCar purchasedCar) {
-        this.setPurchasedCar(purchasedCar);
-        return this;
-    }
-
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -155,7 +131,7 @@ public class Client implements Serializable {
         if (!(o instanceof Client)) {
             return false;
         }
-        return getId() != null && getId().equals(((Client) o).getId());
+        return id != null && id.equals(((Client) o).id);
     }
 
     @Override

@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-center">
   <div class="col-8">
-    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <h2
         id="jhi-purchased-car-heading"
         data-cy="PurchasedCarCreateUpdateHeading"
@@ -12,15 +12,13 @@
       <div>
         <jhi-alert-error></jhi-alert-error>
 
-        @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" jhiTranslate="carDealershipApp.purchasedCar.id">ID</label>
-            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-          </div>
-        }
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_purchaseDate" jhiTranslate="carDealershipApp.purchasedCar.purchaseDate">Purchase Date</label>
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="carDealershipApp.purchasedCar.purchaseDate" for="field_purchaseDate">Purchase Date</label>
           <div class="input-group">
             <input
               id="field_purchaseDate"
@@ -38,18 +36,16 @@
           </div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_car" jhiTranslate="carDealershipApp.purchasedCar.car">Car</label>
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="carDealershipApp.purchasedCar.car" for="field_car">Car</label>
           <select class="form-control" id="field_car" data-cy="car" name="car" formControlName="car" [compareWith]="compareCar">
             <option [ngValue]="null"></option>
-            @for (carOption of carsCollection; track $index) {
-              <option [ngValue]="carOption">{{ carOption.id }}</option>
-            }
+            <option [ngValue]="carOption" *ngFor="let carOption of carsSharedCollection">{{ carOption.model }}</option>
           </select>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_client" jhiTranslate="carDealershipApp.purchasedCar.client">Client</label>
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="carDealershipApp.purchasedCar.client" for="field_client">Client</label>
           <select
             class="form-control"
             id="field_client"
@@ -59,9 +55,7 @@
             [compareWith]="compareClient"
           >
             <option [ngValue]="null"></option>
-            @for (clientOption of clientsCollection; track $index) {
-              <option [ngValue]="clientOption">{{ clientOption.id }}</option>
-            }
+            <option [ngValue]="clientOption" *ngFor="let clientOption of clientsSharedCollection">{{ clientOption.email }}</option>
           </select>
         </div>
       </div>

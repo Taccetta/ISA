@@ -1,14 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpResponse, provideHttpClient } from '@angular/common/http';
+import { HttpResponse } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, from, of } from 'rxjs';
+import { RouterTestingModule } from '@angular/router/testing';
+import { of, Subject, from } from 'rxjs';
 
-import { IManufacturer } from 'app/entities/manufacturer/manufacturer.model';
-import { ManufacturerService } from 'app/entities/manufacturer/service/manufacturer.service';
+import { CarFormService } from './car-form.service';
 import { CarService } from '../service/car.service';
 import { ICar } from '../car.model';
-import { CarFormService } from './car-form.service';
+import { IManufacturer } from 'app/entities/manufacturer/manufacturer.model';
+import { ManufacturerService } from 'app/entities/manufacturer/service/manufacturer.service';
 
 import { CarUpdateComponent } from './car-update.component';
 
@@ -22,9 +24,9 @@ describe('Car Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [CarUpdateComponent],
+      imports: [HttpClientTestingModule, RouterTestingModule.withRoutes([])],
+      declarations: [CarUpdateComponent],
       providers: [
-        provideHttpClient(),
         FormBuilder,
         {
           provide: ActivatedRoute,
@@ -47,33 +49,37 @@ describe('Car Management Update Component', () => {
   });
 
   describe('ngOnInit', () => {
-    it('Should call manufacturer query and add missing value', () => {
-      const car: ICar = { id: 14019 };
-      const manufacturer: IManufacturer = { id: 7851 };
+    it('Should call Manufacturer query and add missing value', () => {
+      const car: ICar = { id: 456 };
+      const manufacturer: IManufacturer = { id: 6897 };
       car.manufacturer = manufacturer;
 
-      const manufacturerCollection: IManufacturer[] = [{ id: 7851 }];
+      const manufacturerCollection: IManufacturer[] = [{ id: 97852 }];
       jest.spyOn(manufacturerService, 'query').mockReturnValue(of(new HttpResponse({ body: manufacturerCollection })));
-      const expectedCollection: IManufacturer[] = [manufacturer, ...manufacturerCollection];
+      const additionalManufacturers = [manufacturer];
+      const expectedCollection: IManufacturer[] = [...additionalManufacturers, ...manufacturerCollection];
       jest.spyOn(manufacturerService, 'addManufacturerToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ car });
       comp.ngOnInit();
 
       expect(manufacturerService.query).toHaveBeenCalled();
-      expect(manufacturerService.addManufacturerToCollectionIfMissing).toHaveBeenCalledWith(manufacturerCollection, manufacturer);
-      expect(comp.manufacturersCollection).toEqual(expectedCollection);
+      expect(manufacturerService.addManufacturerToCollectionIfMissing).toHaveBeenCalledWith(
+        manufacturerCollection,
+        ...additionalManufacturers.map(expect.objectContaining)
+      );
+      expect(comp.manufacturersSharedCollection).toEqual(expectedCollection);
     });
 
     it('Should update editForm', () => {
-      const car: ICar = { id: 14019 };
-      const manufacturer: IManufacturer = { id: 7851 };
+      const car: ICar = { id: 456 };
+      const manufacturer: IManufacturer = { id: 70056 };
       car.manufacturer = manufacturer;
 
       activatedRoute.data = of({ car });
       comp.ngOnInit();
 
-      expect(comp.manufacturersCollection).toContainEqual(manufacturer);
+      expect(comp.manufacturersSharedCollection).toContain(manufacturer);
       expect(comp.car).toEqual(car);
     });
   });
@@ -82,7 +88,7 @@ describe('Car Management Update Component', () => {
     it('Should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<ICar>>();
-      const car = { id: 30624 };
+      const car = { id: 123 };
       jest.spyOn(carFormService, 'getCar').mockReturnValue(car);
       jest.spyOn(carService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -105,7 +111,7 @@ describe('Car Management Update Component', () => {
     it('Should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<ICar>>();
-      const car = { id: 30624 };
+      const car = { id: 123 };
       jest.spyOn(carFormService, 'getCar').mockReturnValue({ id: null });
       jest.spyOn(carService, 'create').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -128,7 +134,7 @@ describe('Car Management Update Component', () => {
     it('Should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<ICar>>();
-      const car = { id: 30624 };
+      const car = { id: 123 };
       jest.spyOn(carService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ car });
@@ -149,8 +155,8 @@ describe('Car Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareManufacturer', () => {
       it('Should forward to manufacturerService', () => {
-        const entity = { id: 7851 };
-        const entity2 = { id: 13084 };
+        const entity = { id: 123 };
+        const entity2 = { id: 456 };
         jest.spyOn(manufacturerService, 'compareManufacturer');
         comp.compareManufacturer(entity, entity2);
         expect(manufacturerService.compareManufacturer).toHaveBeenCalledWith(entity, entity2);

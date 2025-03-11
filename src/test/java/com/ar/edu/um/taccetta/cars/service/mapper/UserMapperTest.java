@@ -2,12 +2,9 @@ package com.ar.edu.um.taccetta.cars.service.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.ar.edu.um.taccetta.cars.domain.Authority;
 import com.ar.edu.um.taccetta.cars.domain.User;
-import com.ar.edu.um.taccetta.cars.security.AuthoritiesConstants;
 import com.ar.edu.um.taccetta.cars.service.dto.AdminUserDTO;
 import com.ar.edu.um.taccetta.cars.service.dto.UserDTO;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,63 +30,15 @@ class UserMapperTest {
         userMapper = new UserMapper();
         user = new User();
         user.setLogin(DEFAULT_LOGIN);
-        user.setPassword(RandomStringUtils.insecure().nextAlphanumeric(60));
+        user.setPassword(RandomStringUtils.randomAlphanumeric(60));
         user.setActivated(true);
         user.setEmail("johndoe@localhost");
         user.setFirstName("john");
         user.setLastName("doe");
         user.setImageUrl("image_url");
-        user.setCreatedBy(DEFAULT_LOGIN);
-        user.setCreatedDate(Instant.now());
-        user.setLastModifiedBy(DEFAULT_LOGIN);
-        user.setLastModifiedDate(Instant.now());
         user.setLangKey("en");
 
-        Set<Authority> authorities = new HashSet<>();
-        Authority authority = new Authority();
-        authority.setName(AuthoritiesConstants.USER);
-        authorities.add(authority);
-        user.setAuthorities(authorities);
-
         userDto = new AdminUserDTO(user);
-    }
-
-    @Test
-    void testUserToUserDTO() {
-        AdminUserDTO convertedUserDto = userMapper.userToAdminUserDTO(user);
-
-        assertThat(convertedUserDto.getId()).isEqualTo(user.getId());
-        assertThat(convertedUserDto.getLogin()).isEqualTo(user.getLogin());
-        assertThat(convertedUserDto.getFirstName()).isEqualTo(user.getFirstName());
-        assertThat(convertedUserDto.getLastName()).isEqualTo(user.getLastName());
-        assertThat(convertedUserDto.getEmail()).isEqualTo(user.getEmail());
-        assertThat(convertedUserDto.isActivated()).isEqualTo(user.isActivated());
-        assertThat(convertedUserDto.getImageUrl()).isEqualTo(user.getImageUrl());
-        assertThat(convertedUserDto.getCreatedBy()).isEqualTo(user.getCreatedBy());
-        assertThat(convertedUserDto.getCreatedDate()).isEqualTo(user.getCreatedDate());
-        assertThat(convertedUserDto.getLastModifiedBy()).isEqualTo(user.getLastModifiedBy());
-        assertThat(convertedUserDto.getLastModifiedDate()).isEqualTo(user.getLastModifiedDate());
-        assertThat(convertedUserDto.getLangKey()).isEqualTo(user.getLangKey());
-        assertThat(convertedUserDto.getAuthorities()).containsExactly(AuthoritiesConstants.USER);
-    }
-
-    @Test
-    void testUserDTOtoUser() {
-        User convertedUser = userMapper.userDTOToUser(userDto);
-
-        assertThat(convertedUser.getId()).isEqualTo(userDto.getId());
-        assertThat(convertedUser.getLogin()).isEqualTo(userDto.getLogin());
-        assertThat(convertedUser.getFirstName()).isEqualTo(userDto.getFirstName());
-        assertThat(convertedUser.getLastName()).isEqualTo(userDto.getLastName());
-        assertThat(convertedUser.getEmail()).isEqualTo(userDto.getEmail());
-        assertThat(convertedUser.isActivated()).isEqualTo(userDto.isActivated());
-        assertThat(convertedUser.getImageUrl()).isEqualTo(userDto.getImageUrl());
-        assertThat(convertedUser.getLangKey()).isEqualTo(userDto.getLangKey());
-        assertThat(convertedUser.getCreatedBy()).isEqualTo(userDto.getCreatedBy());
-        assertThat(convertedUser.getCreatedDate()).isEqualTo(userDto.getCreatedDate());
-        assertThat(convertedUser.getLastModifiedBy()).isEqualTo(userDto.getLastModifiedBy());
-        assertThat(convertedUser.getLastModifiedDate()).isEqualTo(userDto.getLastModifiedDate());
-        assertThat(convertedUser.getAuthorities()).extracting("name").containsExactly(AuthoritiesConstants.USER);
     }
 
     @Test
@@ -147,23 +96,27 @@ class UserMapperTest {
 
     @Test
     void userDTOToUserMapWithAuthoritiesStringShouldReturnUserWithAuthorities() {
-        User convertedUser = userMapper.userDTOToUser(userDto);
+        Set<String> authoritiesAsString = new HashSet<>();
+        authoritiesAsString.add("ADMIN");
+        userDto.setAuthorities(authoritiesAsString);
 
-        assertThat(convertedUser).isNotNull();
-        assertThat(convertedUser.getAuthorities()).isNotNull();
-        assertThat(convertedUser.getAuthorities()).isNotEmpty();
-        assertThat(convertedUser.getAuthorities().iterator().next().getName()).isEqualTo(AuthoritiesConstants.USER);
+        User user = userMapper.userDTOToUser(userDto);
+
+        assertThat(user).isNotNull();
+        assertThat(user.getAuthorities()).isNotNull();
+        assertThat(user.getAuthorities()).isNotEmpty();
+        assertThat(user.getAuthorities().iterator().next().getName()).isEqualTo("ADMIN");
     }
 
     @Test
     void userDTOToUserMapWithNullAuthoritiesStringShouldReturnUserWithEmptyAuthorities() {
         userDto.setAuthorities(null);
 
-        User persistUser = userMapper.userDTOToUser(userDto);
+        User user = userMapper.userDTOToUser(userDto);
 
-        assertThat(persistUser).isNotNull();
-        assertThat(persistUser.getAuthorities()).isNotNull();
-        assertThat(persistUser.getAuthorities()).isEmpty();
+        assertThat(user).isNotNull();
+        assertThat(user.getAuthorities()).isNotNull();
+        assertThat(user.getAuthorities()).isEmpty();
     }
 
     @Test

@@ -1,23 +1,26 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpResponse, provideHttpClient } from '@angular/common/http';
-import { ActivatedRoute, ActivatedRouteSnapshot, Router, convertToParamMap } from '@angular/router';
+import { HttpResponse } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ActivatedRouteSnapshot, ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 
 import { IPurchasedCar } from '../purchased-car.model';
 import { PurchasedCarService } from '../service/purchased-car.service';
 
-import purchasedCarResolve from './purchased-car-routing-resolve.service';
+import { PurchasedCarRoutingResolveService } from './purchased-car-routing-resolve.service';
 
 describe('PurchasedCar routing resolve service', () => {
   let mockRouter: Router;
   let mockActivatedRouteSnapshot: ActivatedRouteSnapshot;
+  let routingResolveService: PurchasedCarRoutingResolveService;
   let service: PurchasedCarService;
   let resultPurchasedCar: IPurchasedCar | null | undefined;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule, RouterTestingModule.withRoutes([])],
       providers: [
-        provideHttpClient(),
         {
           provide: ActivatedRoute,
           useValue: {
@@ -31,6 +34,7 @@ describe('PurchasedCar routing resolve service', () => {
     mockRouter = TestBed.inject(Router);
     jest.spyOn(mockRouter, 'navigate').mockImplementation(() => Promise.resolve(true));
     mockActivatedRouteSnapshot = TestBed.inject(ActivatedRoute).snapshot;
+    routingResolveService = TestBed.inject(PurchasedCarRoutingResolveService);
     service = TestBed.inject(PurchasedCarService);
     resultPurchasedCar = undefined;
   });
@@ -42,16 +46,12 @@ describe('PurchasedCar routing resolve service', () => {
       mockActivatedRouteSnapshot.params = { id: 123 };
 
       // WHEN
-      TestBed.runInInjectionContext(() => {
-        purchasedCarResolve(mockActivatedRouteSnapshot).subscribe({
-          next(result) {
-            resultPurchasedCar = result;
-          },
-        });
+      routingResolveService.resolve(mockActivatedRouteSnapshot).subscribe(result => {
+        resultPurchasedCar = result;
       });
 
       // THEN
-      expect(service.find).toHaveBeenCalledWith(123);
+      expect(service.find).toBeCalledWith(123);
       expect(resultPurchasedCar).toEqual({ id: 123 });
     });
 
@@ -61,16 +61,12 @@ describe('PurchasedCar routing resolve service', () => {
       mockActivatedRouteSnapshot.params = {};
 
       // WHEN
-      TestBed.runInInjectionContext(() => {
-        purchasedCarResolve(mockActivatedRouteSnapshot).subscribe({
-          next(result) {
-            resultPurchasedCar = result;
-          },
-        });
+      routingResolveService.resolve(mockActivatedRouteSnapshot).subscribe(result => {
+        resultPurchasedCar = result;
       });
 
       // THEN
-      expect(service.find).not.toHaveBeenCalled();
+      expect(service.find).not.toBeCalled();
       expect(resultPurchasedCar).toEqual(null);
     });
 
@@ -80,16 +76,12 @@ describe('PurchasedCar routing resolve service', () => {
       mockActivatedRouteSnapshot.params = { id: 123 };
 
       // WHEN
-      TestBed.runInInjectionContext(() => {
-        purchasedCarResolve(mockActivatedRouteSnapshot).subscribe({
-          next(result) {
-            resultPurchasedCar = result;
-          },
-        });
+      routingResolveService.resolve(mockActivatedRouteSnapshot).subscribe(result => {
+        resultPurchasedCar = result;
       });
 
       // THEN
-      expect(service.find).toHaveBeenCalledWith(123);
+      expect(service.find).toBeCalledWith(123);
       expect(resultPurchasedCar).toEqual(undefined);
       expect(mockRouter.navigate).toHaveBeenCalledWith(['404']);
     });

@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-center">
   <div class="col-8">
-    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+    <form name="editForm" role="form" novalidate (ngSubmit)="save()" [formGroup]="editForm">
       <h2 id="jhi-car-heading" data-cy="CarCreateUpdateHeading" jhiTranslate="carDealershipApp.car.home.createOrEditLabel">
         Create or edit a Car
       </h2>
@@ -8,75 +8,78 @@
       <div>
         <jhi-alert-error></jhi-alert-error>
 
-        @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" jhiTranslate="carDealershipApp.car.id">ID</label>
-            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-          </div>
-        }
+        <div class="row mb-3" *ngIf="editForm.controls.id.value !== null">
+          <label class="form-label" jhiTranslate="global.field.id" for="field_id">ID</label>
+          <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+        </div>
 
-        @let modelRef = editForm.get('model')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_model" jhiTranslate="carDealershipApp.car.model">Model</label>
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="carDealershipApp.car.model" for="field_model">Model</label>
           <input type="text" class="form-control" name="model" id="field_model" data-cy="model" formControlName="model" />
-          @if (modelRef.invalid && (modelRef.dirty || modelRef.touched)) {
-            <div>
-              @if (editForm.get('model')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
-              }
-              @if (editForm.get('model')?.errors?.maxlength) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '100' }"
-                  >This field cannot be longer than 100 characters.</small
-                >
-              }
-            </div>
-          }
+          <div *ngIf="editForm.get('model')!.invalid && (editForm.get('model')!.dirty || editForm.get('model')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('model')?.errors?.required" jhiTranslate="entity.validation.required">
+              This field is required.
+            </small>
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('model')?.errors?.maxlength"
+              jhiTranslate="entity.validation.maxlength"
+              [translateValues]="{ max: 100 }"
+            >
+              This field cannot be longer than 100 characters.
+            </small>
+          </div>
         </div>
 
-        @let yearRef = editForm.get('year')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_year" jhiTranslate="carDealershipApp.car.year">Year</label>
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="carDealershipApp.car.year" for="field_year">Year</label>
           <input type="text" class="form-control" name="year" id="field_year" data-cy="year" formControlName="year" />
-          @if (yearRef.invalid && (yearRef.dirty || yearRef.touched)) {
-            <div>
-              @if (editForm.get('year')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
-              }
-              @if (editForm.get('year')?.errors?.minlength) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.minlength" [translateValues]="{ min: '4' }"
-                  >This field is required to be at least 4 characters.</small
-                >
-              }
-              @if (editForm.get('year')?.errors?.maxlength) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '50' }"
-                  >This field cannot be longer than 50 characters.</small
-                >
-              }
-            </div>
-          }
+          <div *ngIf="editForm.get('year')!.invalid && (editForm.get('year')!.dirty || editForm.get('year')!.touched)">
+            <small class="form-text text-danger" *ngIf="editForm.get('year')?.errors?.required" jhiTranslate="entity.validation.required">
+              This field is required.
+            </small>
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('year')?.errors?.minlength"
+              jhiTranslate="entity.validation.minlength"
+              [translateValues]="{ min: 4 }"
+            >
+              This field is required to be at least 4 characters.
+            </small>
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('year')?.errors?.maxlength"
+              jhiTranslate="entity.validation.maxlength"
+              [translateValues]="{ max: 50 }"
+            >
+              This field cannot be longer than 50 characters.
+            </small>
+          </div>
         </div>
 
-        @let availableRef = editForm.get('available')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_available" jhiTranslate="carDealershipApp.car.available">Available</label>
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="carDealershipApp.car.available" for="field_available">Available</label>
           <input type="number" class="form-control" name="available" id="field_available" data-cy="available" formControlName="available" />
-          @if (availableRef.invalid && (availableRef.dirty || availableRef.touched)) {
-            <div>
-              @if (editForm.get('available')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">This field is required.</small>
-              }
-              <small
-                class="form-text text-danger"
-                [hidden]="!editForm.get('available')?.errors?.number"
-                jhiTranslate="entity.validation.number"
-                >This field should be a number.</small
-              >
-            </div>
-          }
+          <div *ngIf="editForm.get('available')!.invalid && (editForm.get('available')!.dirty || editForm.get('available')!.touched)">
+            <small
+              class="form-text text-danger"
+              *ngIf="editForm.get('available')?.errors?.required"
+              jhiTranslate="entity.validation.required"
+            >
+              This field is required.
+            </small>
+            <small
+              class="form-text text-danger"
+              [hidden]="!editForm.get('available')?.errors?.number"
+              jhiTranslate="entity.validation.number"
+            >
+              This field should be a number.
+            </small>
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_manufacturer" jhiTranslate="carDealershipApp.car.manufacturer">Manufacturer</label>
+        <div class="row mb-3">
+          <label class="form-label" jhiTranslate="carDealershipApp.car.manufacturer" for="field_manufacturer">Manufacturer</label>
           <select
             class="form-control"
             id="field_manufacturer"
@@ -86,9 +89,9 @@
             [compareWith]="compareManufacturer"
           >
             <option [ngValue]="null"></option>
-            @for (manufacturerOption of manufacturersCollection; track $index) {
-              <option [ngValue]="manufacturerOption">{{ manufacturerOption.id }}</option>
-            }
+            <option [ngValue]="manufacturerOption" *ngFor="let manufacturerOption of manufacturersSharedCollection">
+              {{ manufacturerOption.name }}
+            </option>
           </select>
         </div>
       </div>

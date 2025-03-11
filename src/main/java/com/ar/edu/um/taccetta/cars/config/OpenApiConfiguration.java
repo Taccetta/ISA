@@ -1,6 +1,6 @@
 package com.ar.edu.um.taccetta.cars.config;
 
-import org.springdoc.core.models.GroupedOpenApi;
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,9 +22,10 @@ public class OpenApiConfiguration {
         JHipsterProperties jHipsterProperties
     ) {
         JHipsterProperties.ApiDocs properties = jHipsterProperties.getApiDocs();
-        return GroupedOpenApi.builder()
+        return GroupedOpenApi
+            .builder()
             .group("openapi")
-            .addOpenApiCustomizer(jhipsterOpenApiCustomizer)
+            .addOpenApiCustomiser(jhipsterOpenApiCustomizer)
             .packagesToScan(API_FIRST_PACKAGE)
             .pathsToMatch(properties.getDefaultIncludePattern())
             .build();

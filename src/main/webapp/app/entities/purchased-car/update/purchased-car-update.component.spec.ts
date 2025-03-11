@@ -1,16 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpResponse, provideHttpClient } from '@angular/common/http';
+import { HttpResponse } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, from, of } from 'rxjs';
+import { RouterTestingModule } from '@angular/router/testing';
+import { of, Subject, from } from 'rxjs';
 
+import { PurchasedCarFormService } from './purchased-car-form.service';
+import { PurchasedCarService } from '../service/purchased-car.service';
+import { IPurchasedCar } from '../purchased-car.model';
 import { ICar } from 'app/entities/car/car.model';
 import { CarService } from 'app/entities/car/service/car.service';
 import { IClient } from 'app/entities/client/client.model';
 import { ClientService } from 'app/entities/client/service/client.service';
-import { IPurchasedCar } from '../purchased-car.model';
-import { PurchasedCarService } from '../service/purchased-car.service';
-import { PurchasedCarFormService } from './purchased-car-form.service';
 
 import { PurchasedCarUpdateComponent } from './purchased-car-update.component';
 
@@ -25,9 +27,9 @@ describe('PurchasedCar Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [PurchasedCarUpdateComponent],
+      imports: [HttpClientTestingModule, RouterTestingModule.withRoutes([])],
+      declarations: [PurchasedCarUpdateComponent],
       providers: [
-        provideHttpClient(),
         FormBuilder,
         {
           provide: ActivatedRoute,
@@ -51,54 +53,59 @@ describe('PurchasedCar Management Update Component', () => {
   });
 
   describe('ngOnInit', () => {
-    it('Should call car query and add missing value', () => {
-      const purchasedCar: IPurchasedCar = { id: 28655 };
-      const car: ICar = { id: 30624 };
+    it('Should call Car query and add missing value', () => {
+      const purchasedCar: IPurchasedCar = { id: 456 };
+      const car: ICar = { id: 62802 };
       purchasedCar.car = car;
 
-      const carCollection: ICar[] = [{ id: 30624 }];
+      const carCollection: ICar[] = [{ id: 1506 }];
       jest.spyOn(carService, 'query').mockReturnValue(of(new HttpResponse({ body: carCollection })));
-      const expectedCollection: ICar[] = [car, ...carCollection];
+      const additionalCars = [car];
+      const expectedCollection: ICar[] = [...additionalCars, ...carCollection];
       jest.spyOn(carService, 'addCarToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ purchasedCar });
       comp.ngOnInit();
 
       expect(carService.query).toHaveBeenCalled();
-      expect(carService.addCarToCollectionIfMissing).toHaveBeenCalledWith(carCollection, car);
-      expect(comp.carsCollection).toEqual(expectedCollection);
+      expect(carService.addCarToCollectionIfMissing).toHaveBeenCalledWith(carCollection, ...additionalCars.map(expect.objectContaining));
+      expect(comp.carsSharedCollection).toEqual(expectedCollection);
     });
 
-    it('Should call client query and add missing value', () => {
-      const purchasedCar: IPurchasedCar = { id: 28655 };
-      const client: IClient = { id: 26282 };
+    it('Should call Client query and add missing value', () => {
+      const purchasedCar: IPurchasedCar = { id: 456 };
+      const client: IClient = { id: 35851 };
       purchasedCar.client = client;
 
-      const clientCollection: IClient[] = [{ id: 26282 }];
+      const clientCollection: IClient[] = [{ id: 50779 }];
       jest.spyOn(clientService, 'query').mockReturnValue(of(new HttpResponse({ body: clientCollection })));
-      const expectedCollection: IClient[] = [client, ...clientCollection];
+      const additionalClients = [client];
+      const expectedCollection: IClient[] = [...additionalClients, ...clientCollection];
       jest.spyOn(clientService, 'addClientToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ purchasedCar });
       comp.ngOnInit();
 
       expect(clientService.query).toHaveBeenCalled();
-      expect(clientService.addClientToCollectionIfMissing).toHaveBeenCalledWith(clientCollection, client);
-      expect(comp.clientsCollection).toEqual(expectedCollection);
+      expect(clientService.addClientToCollectionIfMissing).toHaveBeenCalledWith(
+        clientCollection,
+        ...additionalClients.map(expect.objectContaining)
+      );
+      expect(comp.clientsSharedCollection).toEqual(expectedCollection);
     });
 
     it('Should update editForm', () => {
-      const purchasedCar: IPurchasedCar = { id: 28655 };
-      const car: ICar = { id: 30624 };
+      const purchasedCar: IPurchasedCar = { id: 456 };
+      const car: ICar = { id: 10558 };
       purchasedCar.car = car;
-      const client: IClient = { id: 26282 };
+      const client: IClient = { id: 7892 };
       purchasedCar.client = client;
 
       activatedRoute.data = of({ purchasedCar });
       comp.ngOnInit();
 
-      expect(comp.carsCollection).toContainEqual(car);
-      expect(comp.clientsCollection).toContainEqual(client);
+      expect(comp.carsSharedCollection).toContain(car);
+      expect(comp.clientsSharedCollection).toContain(client);
       expect(comp.purchasedCar).toEqual(purchasedCar);
     });
   });
@@ -107,7 +114,7 @@ describe('PurchasedCar Management Update Component', () => {
     it('Should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IPurchasedCar>>();
-      const purchasedCar = { id: 21385 };
+      const purchasedCar = { id: 123 };
       jest.spyOn(purchasedCarFormService, 'getPurchasedCar').mockReturnValue(purchasedCar);
       jest.spyOn(purchasedCarService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -130,7 +137,7 @@ describe('PurchasedCar Management Update Component', () => {
     it('Should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IPurchasedCar>>();
-      const purchasedCar = { id: 21385 };
+      const purchasedCar = { id: 123 };
       jest.spyOn(purchasedCarFormService, 'getPurchasedCar').mockReturnValue({ id: null });
       jest.spyOn(purchasedCarService, 'create').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -153,7 +160,7 @@ describe('PurchasedCar Management Update Component', () => {
     it('Should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IPurchasedCar>>();
-      const purchasedCar = { id: 21385 };
+      const purchasedCar = { id: 123 };
       jest.spyOn(purchasedCarService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ purchasedCar });
@@ -174,8 +181,8 @@ describe('PurchasedCar Management Update Component', () => {
   describe('Compare relationships', () => {
     describe('compareCar', () => {
       it('Should forward to carService', () => {
-        const entity = { id: 30624 };
-        const entity2 = { id: 14019 };
+        const entity = { id: 123 };
+        const entity2 = { id: 456 };
         jest.spyOn(carService, 'compareCar');
         comp.compareCar(entity, entity2);
         expect(carService.compareCar).toHaveBeenCalledWith(entity, entity2);
@@ -184,8 +191,8 @@ describe('PurchasedCar Management Update Component', () => {
 
     describe('compareClient', () => {
       it('Should forward to clientService', () => {
-        const entity = { id: 26282 };
-        const entity2 = { id: 16836 };
+        const entity = { id: 123 };
+        const entity2 = { id: 456 };
         jest.spyOn(clientService, 'compareClient');
         comp.compareClient(entity, entity2);
         expect(clientService.compareClient).toHaveBeenCalledWith(entity, entity2);

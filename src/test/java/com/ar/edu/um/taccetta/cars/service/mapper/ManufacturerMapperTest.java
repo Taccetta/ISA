@@ -5,15 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.ar.edu.um.taccetta.cars.domain.Manufacturer;
 import com.ar.edu.um.taccetta.cars.service.dto.ManufacturerDTO;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
 class ManufacturerMapperTest {
 
-    @Autowired
     private ManufacturerMapper manufacturerMapper;
+
+    @BeforeEach
+    public void setUp() {
+        manufacturerMapper = new ManufacturerMapperImpl();
+    }
 
     @Test
     public void testManDtoToEntity() {

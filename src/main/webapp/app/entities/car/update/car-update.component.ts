@@ -1,36 +1,33 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 
-import SharedModule from 'app/shared/shared.module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
-import { IManufacturer } from 'app/entities/manufacturer/manufacturer.model';
-import { ManufacturerService } from 'app/entities/manufacturer/service/manufacturer.service';
+import { CarFormService, CarFormGroup } from './car-form.service';
 import { ICar } from '../car.model';
 import { CarService } from '../service/car.service';
-import { CarFormGroup, CarFormService } from './car-form.service';
+import { IManufacturer } from 'app/entities/manufacturer/manufacturer.model';
+import { ManufacturerService } from 'app/entities/manufacturer/service/manufacturer.service';
 
 @Component({
   selector: 'jhi-car-update',
   templateUrl: './car-update.component.html',
-  imports: [SharedModule, FormsModule, ReactiveFormsModule],
 })
 export class CarUpdateComponent implements OnInit {
   isSaving = false;
   car: ICar | null = null;
 
-  manufacturersCollection: IManufacturer[] = [];
+  manufacturersSharedCollection: IManufacturer[] = [];
 
-  protected carService = inject(CarService);
-  protected carFormService = inject(CarFormService);
-  protected manufacturerService = inject(ManufacturerService);
-  protected activatedRoute = inject(ActivatedRoute);
-
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: CarFormGroup = this.carFormService.createCarFormGroup();
+
+  constructor(
+    protected carService: CarService,
+    protected carFormService: CarFormService,
+    protected manufacturerService: ManufacturerService,
+    protected activatedRoute: ActivatedRoute
+  ) {}
 
   compareManufacturer = (o1: IManufacturer | null, o2: IManufacturer | null): boolean =>
     this.manufacturerService.compareManufacturer(o1, o2);
@@ -83,21 +80,21 @@ export class CarUpdateComponent implements OnInit {
     this.car = car;
     this.carFormService.resetForm(this.editForm, car);
 
-    this.manufacturersCollection = this.manufacturerService.addManufacturerToCollectionIfMissing<IManufacturer>(
-      this.manufacturersCollection,
-      car.manufacturer,
+    this.manufacturersSharedCollection = this.manufacturerService.addManufacturerToCollectionIfMissing<IManufacturer>(
+      this.manufacturersSharedCollection,
+      car.manufacturer
     );
   }
 
   protected loadRelationshipsOptions(): void {
     this.manufacturerService
-      .query({ 'carId.specified': 'false' })
+      .query()
       .pipe(map((res: HttpResponse<IManufacturer[]>) => res.body ?? []))
       .pipe(
         map((manufacturers: IManufacturer[]) =>
-          this.manufacturerService.addManufacturerToCollectionIfMissing<IManufacturer>(manufacturers, this.car?.manufacturer),
-        ),
+          this.manufacturerService.addManufacturerToCollectionIfMissing<IManufacturer>(manufacturers, this.car?.manufacturer)
+        )
       )
-      .subscribe((manufacturers: IManufacturer[]) => (this.manufacturersCollection = manufacturers));
+      .subscribe((manufacturers: IManufacturer[]) => (this.manufacturersSharedCollection = manufacturers));
   }
 }

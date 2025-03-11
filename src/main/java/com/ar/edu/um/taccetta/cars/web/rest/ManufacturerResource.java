@@ -6,13 +6,13 @@ import com.ar.edu.um.taccetta.cars.service.ManufacturerService;
 import com.ar.edu.um.taccetta.cars.service.criteria.ManufacturerCriteria;
 import com.ar.edu.um.taccetta.cars.service.dto.ManufacturerDTO;
 import com.ar.edu.um.taccetta.cars.web.rest.errors.BadRequestAlertException;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,10 +30,10 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link com.ar.edu.um.taccetta.cars.domain.Manufacturer}.
  */
 @RestController
-@RequestMapping("/api/manufacturers")
+@RequestMapping("/api")
 public class ManufacturerResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ManufacturerResource.class);
+    private final Logger log = LoggerFactory.getLogger(ManufacturerResource.class);
 
     private static final String ENTITY_NAME = "manufacturer";
 
@@ -63,17 +63,18 @@ public class ManufacturerResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new manufacturerDTO, or with status {@code 400 (Bad Request)} if the manufacturer has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("")
+    @PostMapping("/manufacturers")
     public ResponseEntity<ManufacturerDTO> createManufacturer(@Valid @RequestBody ManufacturerDTO manufacturerDTO)
         throws URISyntaxException {
-        LOG.debug("REST request to save Manufacturer : {}", manufacturerDTO);
+        log.debug("REST request to save Manufacturer : {}", manufacturerDTO);
         if (manufacturerDTO.getId() != null) {
             throw new BadRequestAlertException("A new manufacturer cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        manufacturerDTO = manufacturerService.save(manufacturerDTO);
-        return ResponseEntity.created(new URI("/api/manufacturers/" + manufacturerDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, manufacturerDTO.getId().toString()))
-            .body(manufacturerDTO);
+        ManufacturerDTO result = manufacturerService.save(manufacturerDTO);
+        return ResponseEntity
+            .created(new URI("/api/manufacturers/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -86,12 +87,12 @@ public class ManufacturerResource {
      * or with status {@code 500 (Internal Server Error)} if the manufacturerDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/manufacturers/{id}")
     public ResponseEntity<ManufacturerDTO> updateManufacturer(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody ManufacturerDTO manufacturerDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to update Manufacturer : {}, {}", id, manufacturerDTO);
+        log.debug("REST request to update Manufacturer : {}, {}", id, manufacturerDTO);
         if (manufacturerDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -103,10 +104,11 @@ public class ManufacturerResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        manufacturerDTO = manufacturerService.update(manufacturerDTO);
-        return ResponseEntity.ok()
+        ManufacturerDTO result = manufacturerService.update(manufacturerDTO);
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, manufacturerDTO.getId().toString()))
-            .body(manufacturerDTO);
+            .body(result);
     }
 
     /**
@@ -120,12 +122,12 @@ public class ManufacturerResource {
      * or with status {@code 500 (Internal Server Error)} if the manufacturerDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/manufacturers/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<ManufacturerDTO> partialUpdateManufacturer(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody ManufacturerDTO manufacturerDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Manufacturer partially : {}, {}", id, manufacturerDTO);
+        log.debug("REST request to partial update Manufacturer partially : {}, {}", id, manufacturerDTO);
         if (manufacturerDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -152,13 +154,12 @@ public class ManufacturerResource {
      * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of manufacturers in body.
      */
-    @GetMapping("")
+    @GetMapping("/manufacturers")
     public ResponseEntity<List<ManufacturerDTO>> getAllManufacturers(
         ManufacturerCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+        @org.springdoc.api.annotations.ParameterObject Pageable pageable
     ) {
-        LOG.debug("REST request to get Manufacturers by criteria: {}", criteria);
-
+        log.debug("REST request to get Manufacturers by criteria: {}", criteria);
         Page<ManufacturerDTO> page = manufacturerQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -170,9 +171,9 @@ public class ManufacturerResource {
      * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
      */
-    @GetMapping("/count")
+    @GetMapping("/manufacturers/count")
     public ResponseEntity<Long> countManufacturers(ManufacturerCriteria criteria) {
-        LOG.debug("REST request to count Manufacturers by criteria: {}", criteria);
+        log.debug("REST request to count Manufacturers by criteria: {}", criteria);
         return ResponseEntity.ok().body(manufacturerQueryService.countByCriteria(criteria));
     }
 
@@ -182,9 +183,9 @@ public class ManufacturerResource {
      * @param id the id of the manufacturerDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the manufacturerDTO, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<ManufacturerDTO> getManufacturer(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get Manufacturer : {}", id);
+    @GetMapping("/manufacturers/{id}")
+    public ResponseEntity<ManufacturerDTO> getManufacturer(@PathVariable Long id) {
+        log.debug("REST request to get Manufacturer : {}", id);
         Optional<ManufacturerDTO> manufacturerDTO = manufacturerService.findOne(id);
         return ResponseUtil.wrapOrNotFound(manufacturerDTO);
     }
@@ -195,11 +196,12 @@ public class ManufacturerResource {
      * @param id the id of the manufacturerDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteManufacturer(@PathVariable("id") Long id) {
-        LOG.debug("REST request to delete Manufacturer : {}", id);
+    @DeleteMapping("/manufacturers/{id}")
+    public ResponseEntity<Void> deleteManufacturer(@PathVariable Long id) {
+        log.debug("REST request to delete Manufacturer : {}", id);
         manufacturerService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }

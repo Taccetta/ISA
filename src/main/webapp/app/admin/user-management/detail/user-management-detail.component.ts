@@ -1,14 +1,20 @@
-import { Component, input } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import SharedModule from 'app/shared/shared.module';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { User } from '../user-management.model';
 
 @Component({
   selector: 'jhi-user-mgmt-detail',
   templateUrl: './user-management-detail.component.html',
-  imports: [RouterModule, SharedModule],
 })
-export default class UserManagementDetailComponent {
-  user = input<User | null>(null);
+export class UserManagementDetailComponent implements OnInit {
+  user: User | null = null;
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.route.data.subscribe(({ user }) => {
+      this.user = user;
+    });
+  }
 }

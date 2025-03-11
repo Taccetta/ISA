@@ -10,8 +10,9 @@ import com.ar.edu.um.taccetta.cars.service.dto.PasswordChangeDTO;
 import com.ar.edu.um.taccetta.cars.web.rest.errors.*;
 import com.ar.edu.um.taccetta.cars.web.rest.vm.KeyAndPasswordVM;
 import com.ar.edu.um.taccetta.cars.web.rest.vm.ManagedUserVM;
-import jakarta.validation.Valid;
 import java.util.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class AccountResource {
         }
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(AccountResource.class);
+    private final Logger log = LoggerFactory.getLogger(AccountResource.class);
 
     private final UserRepository userRepository;
 
@@ -79,6 +80,18 @@ public class AccountResource {
     }
 
     /**
+     * {@code GET  /authenticate} : check if the user is authenticated, and return its login.
+     *
+     * @param request the HTTP request.
+     * @return the login if the user is authenticated.
+     */
+    @GetMapping("/authenticate")
+    public String isAuthenticated(HttpServletRequest request) {
+        log.debug("REST request to check if the current user is authenticated");
+        return request.getRemoteUser();
+    }
+
+    /**
      * {@code GET  /account} : get the current user.
      *
      * @return the current user.
@@ -101,10 +114,11 @@ public class AccountResource {
      */
     @PostMapping("/account")
     public void saveAccount(@Valid @RequestBody AdminUserDTO userDTO) {
-        String userLogin = SecurityUtils.getCurrentUserLogin()
+        String userLogin = SecurityUtils
+            .getCurrentUserLogin()
             .orElseThrow(() -> new AccountResourceException("Current user login not found"));
         Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.orElseThrow().getLogin().equalsIgnoreCase(userLogin))) {
+        if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(userLogin))) {
             throw new EmailAlreadyUsedException();
         }
         Optional<User> user = userRepository.findOneByLogin(userLogin);
@@ -143,11 +157,11 @@ public class AccountResource {
     public void requestPasswordReset(@RequestBody String mail) {
         Optional<User> user = userService.requestPasswordReset(mail);
         if (user.isPresent()) {
-            mailService.sendPasswordResetMail(user.orElseThrow());
+            mailService.sendPasswordResetMail(user.get());
         } else {
             // Pretend the request has been successful to prevent checking which emails really exist
             // but log that an invalid attempt has been made
-            LOG.warn("Password reset requested for non existing mail");
+            log.warn("Password reset requested for non existing mail");
         }
     }
 

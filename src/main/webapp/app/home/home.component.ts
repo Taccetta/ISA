@@ -1,31 +1,28 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import SharedModule from 'app/shared/shared.module';
 import { AccountService } from 'app/core/auth/account.service';
 import { Account } from 'app/core/auth/account.model';
 
 @Component({
   selector: 'jhi-home',
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
-  imports: [SharedModule, RouterModule],
+  styleUrls: ['./home.component.scss'],
 })
-export default class HomeComponent implements OnInit, OnDestroy {
-  account = signal<Account | null>(null);
+export class HomeComponent implements OnInit, OnDestroy {
+  account: Account | null = null;
 
   private readonly destroy$ = new Subject<void>();
 
-  private readonly accountService = inject(AccountService);
-  private readonly router = inject(Router);
+  constructor(private accountService: AccountService, private router: Router) {}
 
   ngOnInit(): void {
     this.accountService
       .getAuthenticationState()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(account => this.account.set(account));
+      .subscribe(account => (this.account = account));
   }
 
   login(): void {

@@ -5,24 +5,22 @@ import com.ar.edu.um.taccetta.cars.repository.ManufacturerRepository;
 import com.ar.edu.um.taccetta.cars.service.ManufacturerService;
 import com.ar.edu.um.taccetta.cars.service.dto.ManufacturerDTO;
 import com.ar.edu.um.taccetta.cars.service.mapper.ManufacturerMapper;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service Implementation for managing {@link com.ar.edu.um.taccetta.cars.domain.Manufacturer}.
+ * Service Implementation for managing {@link Manufacturer}.
  */
 @Service
 @Transactional
 public class ManufacturerServiceImpl implements ManufacturerService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ManufacturerServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(ManufacturerServiceImpl.class);
 
     private final ManufacturerRepository manufacturerRepository;
 
@@ -35,7 +33,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
 
     @Override
     public ManufacturerDTO save(ManufacturerDTO manufacturerDTO) {
-        LOG.debug("Request to save Manufacturer : {}", manufacturerDTO);
+        log.debug("Request to save Manufacturer : {}", manufacturerDTO);
         Manufacturer manufacturer = manufacturerMapper.toEntity(manufacturerDTO);
         manufacturer = manufacturerRepository.save(manufacturer);
         return manufacturerMapper.toDto(manufacturer);
@@ -43,7 +41,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
 
     @Override
     public ManufacturerDTO update(ManufacturerDTO manufacturerDTO) {
-        LOG.debug("Request to update Manufacturer : {}", manufacturerDTO);
+        log.debug("Request to update Manufacturer : {}", manufacturerDTO);
         Manufacturer manufacturer = manufacturerMapper.toEntity(manufacturerDTO);
         manufacturer = manufacturerRepository.save(manufacturer);
         return manufacturerMapper.toDto(manufacturer);
@@ -51,7 +49,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
 
     @Override
     public Optional<ManufacturerDTO> partialUpdate(ManufacturerDTO manufacturerDTO) {
-        LOG.debug("Request to partially update Manufacturer : {}", manufacturerDTO);
+        log.debug("Request to partially update Manufacturer : {}", manufacturerDTO);
 
         return manufacturerRepository
             .findById(manufacturerDTO.getId())
@@ -64,29 +62,23 @@ public class ManufacturerServiceImpl implements ManufacturerService {
             .map(manufacturerMapper::toDto);
     }
 
-    /**
-     *  Get all the manufacturers where Car is {@code null}.
-     *  @return the list of entities.
-     */
+    @Override
     @Transactional(readOnly = true)
-    public List<ManufacturerDTO> findAllWhereCarIsNull() {
-        LOG.debug("Request to get all manufacturers where Car is null");
-        return StreamSupport.stream(manufacturerRepository.findAll().spliterator(), false)
-            .filter(manufacturer -> manufacturer.getCar() == null)
-            .map(manufacturerMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
+    public Page<ManufacturerDTO> findAll(Pageable pageable) {
+        log.debug("Request to get all Manufacturers");
+        return manufacturerRepository.findAll(pageable).map(manufacturerMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<ManufacturerDTO> findOne(Long id) {
-        LOG.debug("Request to get Manufacturer : {}", id);
+        log.debug("Request to get Manufacturer : {}", id);
         return manufacturerRepository.findById(id).map(manufacturerMapper::toDto);
     }
 
     @Override
     public void delete(Long id) {
-        LOG.debug("Request to delete Manufacturer : {}", id);
+        log.debug("Request to delete Manufacturer : {}", id);
         manufacturerRepository.deleteById(id);
     }
 }

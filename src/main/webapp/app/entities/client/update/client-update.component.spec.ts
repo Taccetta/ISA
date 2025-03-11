@@ -1,12 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpResponse, provideHttpClient } from '@angular/common/http';
+import { HttpResponse } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, from, of } from 'rxjs';
+import { RouterTestingModule } from '@angular/router/testing';
+import { of, Subject, from } from 'rxjs';
 
+import { ClientFormService } from './client-form.service';
 import { ClientService } from '../service/client.service';
 import { IClient } from '../client.model';
-import { ClientFormService } from './client-form.service';
 
 import { ClientUpdateComponent } from './client-update.component';
 
@@ -19,9 +21,9 @@ describe('Client Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [ClientUpdateComponent],
+      imports: [HttpClientTestingModule, RouterTestingModule.withRoutes([])],
+      declarations: [ClientUpdateComponent],
       providers: [
-        provideHttpClient(),
         FormBuilder,
         {
           provide: ActivatedRoute,
@@ -44,7 +46,7 @@ describe('Client Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('Should update editForm', () => {
-      const client: IClient = { id: 16836 };
+      const client: IClient = { id: 456 };
 
       activatedRoute.data = of({ client });
       comp.ngOnInit();
@@ -57,7 +59,7 @@ describe('Client Management Update Component', () => {
     it('Should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IClient>>();
-      const client = { id: 26282 };
+      const client = { id: 123 };
       jest.spyOn(clientFormService, 'getClient').mockReturnValue(client);
       jest.spyOn(clientService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -80,7 +82,7 @@ describe('Client Management Update Component', () => {
     it('Should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IClient>>();
-      const client = { id: 26282 };
+      const client = { id: 123 };
       jest.spyOn(clientFormService, 'getClient').mockReturnValue({ id: null });
       jest.spyOn(clientService, 'create').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -103,7 +105,7 @@ describe('Client Management Update Component', () => {
     it('Should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IClient>>();
-      const client = { id: 26282 };
+      const client = { id: 123 };
       jest.spyOn(clientService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ client });

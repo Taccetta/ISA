@@ -21,8 +21,7 @@
       "model": "Model",
       "year": "Year",
       "available": "Available",
-      "manufacturer": "Manufacturer",
-      "purchasedCar": "Purchased Car"
+      "manufacturer": "Manufacturer"
     }
   }
 }

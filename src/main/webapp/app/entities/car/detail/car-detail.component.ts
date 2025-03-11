@@ -1,16 +1,22 @@
-import { Component, input } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
-import SharedModule from 'app/shared/shared.module';
 import { ICar } from '../car.model';
 
 @Component({
   selector: 'jhi-car-detail',
   templateUrl: './car-detail.component.html',
-  imports: [SharedModule, RouterModule],
 })
-export class CarDetailComponent {
-  car = input<ICar | null>(null);
+export class CarDetailComponent implements OnInit {
+  car: ICar | null = null;
+
+  constructor(protected activatedRoute: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.activatedRoute.data.subscribe(({ car }) => {
+      this.car = car;
+    });
+  }
 
   previousState(): void {
     window.history.back();

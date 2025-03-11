@@ -1,9 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { IClient } from '../client.model';
-import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../client.test-samples';
+import { sampleWithRequiredData, sampleWithNewData, sampleWithPartialData, sampleWithFullData } from '../client.test-samples';
 
 import { ClientService } from './client.service';
 
@@ -18,7 +17,7 @@ describe('Client Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [HttpClientTestingModule],
     });
     expectedResult = null;
     service = TestBed.inject(ClientService);
@@ -38,6 +37,7 @@ describe('Client Service', () => {
     });
 
     it('should create a Client', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const client = { ...sampleWithNewData };
       const returnedFromService = { ...requireRestSample };
       const expected = { ...sampleWithRequiredData };
@@ -165,7 +165,7 @@ describe('Client Service', () => {
       });
 
       it('Should return false if one entity is null', () => {
-        const entity1 = { id: 26282 };
+        const entity1 = { id: 123 };
         const entity2 = null;
 
         const compareResult1 = service.compareClient(entity1, entity2);
@@ -176,8 +176,8 @@ describe('Client Service', () => {
       });
 
       it('Should return false if primaryKey differs', () => {
-        const entity1 = { id: 26282 };
-        const entity2 = { id: 16836 };
+        const entity1 = { id: 123 };
+        const entity2 = { id: 456 };
 
         const compareResult1 = service.compareClient(entity1, entity2);
         const compareResult2 = service.compareClient(entity2, entity1);
@@ -187,8 +187,8 @@ describe('Client Service', () => {
       });
 
       it('Should return false if primaryKey matches', () => {
-        const entity1 = { id: 26282 };
-        const entity2 = { id: 26282 };
+        const entity1 = { id: 123 };
+        const entity2 = { id: 123 };
 
         const compareResult1 = service.compareClient(entity1, entity2);
         const compareResult2 = service.compareClient(entity2, entity1);

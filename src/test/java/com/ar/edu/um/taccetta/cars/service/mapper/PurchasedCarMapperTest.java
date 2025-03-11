@@ -9,15 +9,17 @@ import com.ar.edu.um.taccetta.cars.domain.Manufacturer;
 import com.ar.edu.um.taccetta.cars.domain.PurchasedCar;
 import com.ar.edu.um.taccetta.cars.service.dto.PurchasedCarDTO;
 import java.time.LocalDate;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
 class PurchasedCarMapperTest {
 
-    @Autowired
     private PurchasedCarMapper purchasedCarMapper;
+
+    @BeforeEach
+    public void setUp() {
+        purchasedCarMapper = new PurchasedCarMapperImpl();
+    }
 
     @Test
     public void testPurchaseDtoToEntity() {

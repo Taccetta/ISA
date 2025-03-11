@@ -9,7 +9,9 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 
 public class MysqlTestContainer implements SqlTestContainer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MysqlTestContainer.class);
+    private static final Logger log = LoggerFactory.getLogger(MysqlTestContainer.class);
+    private long memoryInBytes = 100 * 1024 * 1024;
+    private long memorySwapInBytes = 200 * 1024 * 1024;
 
     private MySQLContainer<?> mysqlContainer;
 
@@ -23,11 +25,15 @@ public class MysqlTestContainer implements SqlTestContainer {
     @Override
     public void afterPropertiesSet() {
         if (null == mysqlContainer) {
-            mysqlContainer = new MySQLContainer<>("mysql:9.2.0")
-                .withDatabaseName("carDealership")
-                .withTmpFs(Collections.singletonMap("/testtmpfs", "rw"))
-                .withLogConsumer(new Slf4jLogConsumer(LOG))
-                .withReuse(true);
+            mysqlContainer =
+                new MySQLContainer<>("mysql:8.0.30-debian")
+                    .withDatabaseName("carDealership")
+                    .withTmpFs(Collections.singletonMap("/testtmpfs", "rw"))
+                    .withLogConsumer(new Slf4jLogConsumer(log))
+                    .withReuse(true)
+                    .withPrivilegedMode(true)
+                    .withConfigurationOverride("testcontainers/mysql")
+                    .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withMemory(memoryInBytes).withMemorySwap(memorySwapInBytes));
         }
         if (!mysqlContainer.isRunning()) {
             mysqlContainer.start();

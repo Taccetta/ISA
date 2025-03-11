@@ -18,8 +18,7 @@
         "title": "Manufacturer"
       },
       "id": "ID",
-      "name": "Name",
-      "car": "Car"
+      "name": "Name"
     }
   }
 }

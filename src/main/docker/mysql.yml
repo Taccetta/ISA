@@ -1,10 +1,11 @@
 # This configuration is intended for development purpose, it's **your** responsibility to harden it for production
-name: cardealership
+version: '3.8'
 services:
-  mysql:
-    image: mysql:9.2.0
+  cardealership-mysql:
+    image: mysql:8.0.30
     volumes:
       - ./config/mysql:/etc/mysql/conf.d
+    #   - ~/volumes/jhipster/carDealership/mysql/:/var/lib/mysql/
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=cardealership
@@ -12,9 +13,4 @@ services:
     # remove the "127.0.0.1:" prefix
     ports:
       - 127.0.0.1:3306:3306
-    command: mysqld --lower_case_table_names=1 --skip-mysqlx --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
-    healthcheck:
-      test: ['CMD-SHELL', 'mysql -e "SHOW DATABASES;" && sleep 5']
-      interval: 5s
-      timeout: 10s
-      retries: 10
+    command: mysqld --lower_case_table_names=1 --skip-ssl --character_set_server=utf8mb4 --explicit_defaults_for_timestamp

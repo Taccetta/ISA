@@ -1,7 +1,8 @@
 jest.mock('@ng-bootstrap/ng-bootstrap');
 
-import { ComponentFixture, TestBed, fakeAsync, inject, tick } from '@angular/core/testing';
-import { HttpResponse, provideHttpClient } from '@angular/common/http';
+import { ComponentFixture, TestBed, inject, fakeAsync, tick } from '@angular/core/testing';
+import { HttpResponse } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -17,8 +18,9 @@ describe('PurchasedCar Management Delete Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [PurchasedCarDeleteDialogComponent],
-      providers: [provideHttpClient(), NgbActiveModal],
+      imports: [HttpClientTestingModule],
+      declarations: [PurchasedCarDeleteDialogComponent],
+      providers: [NgbActiveModal],
     })
       .overrideTemplate(PurchasedCarDeleteDialogComponent, '')
       .compileComponents();
@@ -42,7 +44,7 @@ describe('PurchasedCar Management Delete Component', () => {
         // THEN
         expect(service.delete).toHaveBeenCalledWith(123);
         expect(mockActiveModal.close).toHaveBeenCalledWith('deleted');
-      }),
+      })
     ));
 
     it('Should not call delete service on clear', () => {

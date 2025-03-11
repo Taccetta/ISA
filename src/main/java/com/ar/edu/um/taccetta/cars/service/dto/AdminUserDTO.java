@@ -3,11 +3,11 @@ package com.ar.edu.um.taccetta.cars.service.dto;
 import com.ar.edu.um.taccetta.cars.config.Constants;
 import com.ar.edu.um.taccetta.cars.domain.Authority;
 import com.ar.edu.um.taccetta.cars.domain.User;
-import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.validation.constraints.*;
 
 /**
  * A DTO representing a user, with his authorities.

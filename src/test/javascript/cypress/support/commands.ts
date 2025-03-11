@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-use-before-define */
+// eslint-disable-next-line spaced-comment
+/// <reference types="cypress" />
 
 // ***********************************************
 // This commands.ts shows you how to
@@ -34,6 +37,7 @@ export const forgetYourPasswordSelector = '[data-cy="forgetYourPasswordSelector"
 export const submitLoginSelector = '[data-cy="submit"]';
 
 // Register
+export const titleRegisterSelector = '[data-cy="registerTitle"]';
 export const usernameRegisterSelector = '[data-cy="username"]';
 export const emailRegisterSelector = '[data-cy="email"]';
 export const firstPasswordRegisterSelector = '[data-cy="firstPassword"]';
@@ -44,6 +48,7 @@ export const submitRegisterSelector = '[data-cy="submit"]';
 export const firstNameSettingsSelector = '[data-cy="firstname"]';
 export const lastNameSettingsSelector = '[data-cy="lastname"]';
 export const emailSettingsSelector = '[data-cy="email"]';
+export const languageSettingsSelector = '[data-cy="langKey"]';
 export const submitSettingsSelector = '[data-cy="submit"]';
 
 // Password
@@ -74,17 +79,13 @@ export const classInvalid = 'ng-invalid';
 export const classValid = 'ng-valid';
 
 Cypress.Commands.add('authenticatedRequest', data => {
-  const jwtToken = sessionStorage.getItem(Cypress.env('jwtStorageName'));
-  const bearerToken = jwtToken && JSON.parse(jwtToken);
-  if (bearerToken) {
-    return cy.request({
-      ...data,
-      auth: {
-        bearer: bearerToken,
-      },
-    });
-  }
-  return cy.request(data);
+  const bearerToken = JSON.parse(sessionStorage.getItem(Cypress.env('jwtStorageName')));
+  return cy.request({
+    ...data,
+    auth: {
+      bearer: bearerToken,
+    },
+  });
 });
 
 Cypress.Commands.add('login', (username: string, password: string) => {
@@ -108,7 +109,7 @@ Cypress.Commands.add('login', (username: string, password: string) => {
       validate() {
         cy.authenticatedRequest({ url: '/api/account' }).its('status').should('eq', 200);
       },
-    },
+    }
   );
 });
 
@@ -122,5 +123,5 @@ declare global {
 }
 
 import 'cypress-audit/commands';
-// Convert this to a module instead of a script (allows import/export)
+// Convert this to a module instead of script (allows import/export)
 export {};

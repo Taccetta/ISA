@@ -1,12 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpResponse, provideHttpClient } from '@angular/common/http';
+import { HttpResponse } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, from, of } from 'rxjs';
+import { RouterTestingModule } from '@angular/router/testing';
+import { of, Subject, from } from 'rxjs';
 
+import { ManufacturerFormService } from './manufacturer-form.service';
 import { ManufacturerService } from '../service/manufacturer.service';
 import { IManufacturer } from '../manufacturer.model';
-import { ManufacturerFormService } from './manufacturer-form.service';
 
 import { ManufacturerUpdateComponent } from './manufacturer-update.component';
 
@@ -19,9 +21,9 @@ describe('Manufacturer Management Update Component', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [ManufacturerUpdateComponent],
+      imports: [HttpClientTestingModule, RouterTestingModule.withRoutes([])],
+      declarations: [ManufacturerUpdateComponent],
       providers: [
-        provideHttpClient(),
         FormBuilder,
         {
           provide: ActivatedRoute,
@@ -44,7 +46,7 @@ describe('Manufacturer Management Update Component', () => {
 
   describe('ngOnInit', () => {
     it('Should update editForm', () => {
-      const manufacturer: IManufacturer = { id: 13084 };
+      const manufacturer: IManufacturer = { id: 456 };
 
       activatedRoute.data = of({ manufacturer });
       comp.ngOnInit();
@@ -57,7 +59,7 @@ describe('Manufacturer Management Update Component', () => {
     it('Should call update service on save for existing entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IManufacturer>>();
-      const manufacturer = { id: 7851 };
+      const manufacturer = { id: 123 };
       jest.spyOn(manufacturerFormService, 'getManufacturer').mockReturnValue(manufacturer);
       jest.spyOn(manufacturerService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -80,7 +82,7 @@ describe('Manufacturer Management Update Component', () => {
     it('Should call create service on save for new entity', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IManufacturer>>();
-      const manufacturer = { id: 7851 };
+      const manufacturer = { id: 123 };
       jest.spyOn(manufacturerFormService, 'getManufacturer').mockReturnValue({ id: null });
       jest.spyOn(manufacturerService, 'create').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
@@ -103,7 +105,7 @@ describe('Manufacturer Management Update Component', () => {
     it('Should set isSaving to false on error', () => {
       // GIVEN
       const saveSubject = new Subject<HttpResponse<IManufacturer>>();
-      const manufacturer = { id: 7851 };
+      const manufacturer = { id: 123 };
       jest.spyOn(manufacturerService, 'update').mockReturnValue(saveSubject);
       jest.spyOn(comp, 'previousState');
       activatedRoute.data = of({ manufacturer });

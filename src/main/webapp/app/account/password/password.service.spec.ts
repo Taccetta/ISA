@@ -1,9 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { PasswordService } from './password.service';
+import { ApplicationConfigService } from 'app/core/config/application-config.service';
 
 describe('Password Service', () => {
   let service: PasswordService;
@@ -12,7 +11,7 @@ describe('Password Service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [HttpClientTestingModule],
     });
 
     service = TestBed.inject(PasswordService);

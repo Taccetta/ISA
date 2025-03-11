@@ -1,24 +1,21 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 
-import { Alert, AlertService } from 'app/core/util/alert.service';
+import { AlertService, Alert } from 'app/core/util/alert.service';
 
 @Component({
   selector: 'jhi-alert',
   templateUrl: './alert.component.html',
-  imports: [CommonModule, NgbModule],
 })
 export class AlertComponent implements OnInit, OnDestroy {
-  alerts = signal<Alert[]>([]);
+  alerts: Alert[] = [];
 
-  private readonly alertService = inject(AlertService);
+  constructor(private alertService: AlertService) {}
 
   ngOnInit(): void {
-    this.alerts.set(this.alertService.get());
+    this.alerts = this.alertService.get();
   }
 
-  setClasses(alert: Alert): Record<string, boolean> {
+  setClasses(alert: Alert): { [key: string]: boolean } {
     const classes = { 'jhi-toast': Boolean(alert.toast) };
     if (alert.position) {
       return { ...classes, [alert.position]: true };
@@ -31,6 +28,6 @@ export class AlertComponent implements OnInit, OnDestroy {
   }
 
   close(alert: Alert): void {
-    alert.close?.(this.alerts());
+    alert.close?.(this.alerts);
   }
 }

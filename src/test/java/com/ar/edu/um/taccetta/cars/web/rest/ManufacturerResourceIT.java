@@ -1,7 +1,5 @@
 package com.ar.edu.um.taccetta.cars.web.rest;
 
-import static com.ar.edu.um.taccetta.cars.domain.ManufacturerAsserts.*;
-import static com.ar.edu.um.taccetta.cars.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -10,13 +8,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ar.edu.um.taccetta.cars.IntegrationTest;
 import com.ar.edu.um.taccetta.cars.domain.Manufacturer;
 import com.ar.edu.um.taccetta.cars.repository.ManufacturerRepository;
+import com.ar.edu.um.taccetta.cars.service.criteria.ManufacturerCriteria;
 import com.ar.edu.um.taccetta.cars.service.dto.ManufacturerDTO;
 import com.ar.edu.um.taccetta.cars.service.mapper.ManufacturerMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
-import org.junit.jupiter.api.AfterEach;
+import javax.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +39,7 @@ class ManufacturerResourceIT {
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
     private static Random random = new Random();
-    private static AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
-
-    @Autowired
-    private ObjectMapper om;
+    private static AtomicLong count = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
 
     @Autowired
     private ManufacturerRepository manufacturerRepository;
@@ -60,16 +55,15 @@ class ManufacturerResourceIT {
 
     private Manufacturer manufacturer;
 
-    private Manufacturer insertedManufacturer;
-
     /**
      * Create an entity for this test.
      *
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Manufacturer createEntity() {
-        return new Manufacturer().name(DEFAULT_NAME);
+    public static Manufacturer createEntity(EntityManager em) {
+        Manufacturer manufacturer = new Manufacturer().name(DEFAULT_NAME);
+        return manufacturer;
     }
 
     /**
@@ -78,45 +72,33 @@ class ManufacturerResourceIT {
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
-    public static Manufacturer createUpdatedEntity() {
-        return new Manufacturer().name(UPDATED_NAME);
+    public static Manufacturer createUpdatedEntity(EntityManager em) {
+        Manufacturer manufacturer = new Manufacturer().name(UPDATED_NAME);
+        return manufacturer;
     }
 
     @BeforeEach
     public void initTest() {
-        manufacturer = createEntity();
-    }
-
-    @AfterEach
-    public void cleanup() {
-        if (insertedManufacturer != null) {
-            manufacturerRepository.delete(insertedManufacturer);
-            insertedManufacturer = null;
-        }
+        manufacturer = createEntity(em);
     }
 
     @Test
     @Transactional
     void createManufacturer() throws Exception {
-        long databaseSizeBeforeCreate = getRepositoryCount();
+        int databaseSizeBeforeCreate = manufacturerRepository.findAll().size();
         // Create the Manufacturer
         ManufacturerDTO manufacturerDTO = manufacturerMapper.toDto(manufacturer);
-        var returnedManufacturerDTO = om.readValue(
-            restManufacturerMockMvc
-                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(manufacturerDTO)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString(),
-            ManufacturerDTO.class
-        );
+        restManufacturerMockMvc
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
+            )
+            .andExpect(status().isCreated());
 
         // Validate the Manufacturer in the database
-        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
-        var returnedManufacturer = manufacturerMapper.toEntity(returnedManufacturerDTO);
-        assertManufacturerUpdatableFieldsEquals(returnedManufacturer, getPersistedManufacturer(returnedManufacturer));
-
-        insertedManufacturer = returnedManufacturer;
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeCreate + 1);
+        Manufacturer testManufacturer = manufacturerList.get(manufacturerList.size() - 1);
+        assertThat(testManufacturer.getName()).isEqualTo(DEFAULT_NAME);
     }
 
     @Test
@@ -126,21 +108,24 @@ class ManufacturerResourceIT {
         manufacturer.setId(1L);
         ManufacturerDTO manufacturerDTO = manufacturerMapper.toDto(manufacturer);
 
-        long databaseSizeBeforeCreate = getRepositoryCount();
+        int databaseSizeBeforeCreate = manufacturerRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restManufacturerMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(manufacturerDTO)))
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
+            )
             .andExpect(status().isBadRequest());
 
         // Validate the Manufacturer in the database
-        assertSameRepositoryCount(databaseSizeBeforeCreate);
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeCreate);
     }
 
     @Test
     @Transactional
     void checkNameIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
+        int databaseSizeBeforeTest = manufacturerRepository.findAll().size();
         // set the field null
         manufacturer.setName(null);
 
@@ -148,17 +133,20 @@ class ManufacturerResourceIT {
         ManufacturerDTO manufacturerDTO = manufacturerMapper.toDto(manufacturer);
 
         restManufacturerMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(manufacturerDTO)))
+            .perform(
+                post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
+            )
             .andExpect(status().isBadRequest());
 
-        assertSameRepositoryCount(databaseSizeBeforeTest);
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeTest);
     }
 
     @Test
     @Transactional
     void getAllManufacturers() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
         // Get all the manufacturerList
         restManufacturerMockMvc
@@ -173,7 +161,7 @@ class ManufacturerResourceIT {
     @Transactional
     void getManufacturer() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
         // Get the manufacturer
         restManufacturerMockMvc
@@ -188,70 +176,83 @@ class ManufacturerResourceIT {
     @Transactional
     void getManufacturersByIdFiltering() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
         Long id = manufacturer.getId();
 
-        defaultManufacturerFiltering("id.equals=" + id, "id.notEquals=" + id);
+        defaultManufacturerShouldBeFound("id.equals=" + id);
+        defaultManufacturerShouldNotBeFound("id.notEquals=" + id);
 
-        defaultManufacturerFiltering("id.greaterThanOrEqual=" + id, "id.greaterThan=" + id);
+        defaultManufacturerShouldBeFound("id.greaterThanOrEqual=" + id);
+        defaultManufacturerShouldNotBeFound("id.greaterThan=" + id);
 
-        defaultManufacturerFiltering("id.lessThanOrEqual=" + id, "id.lessThan=" + id);
+        defaultManufacturerShouldBeFound("id.lessThanOrEqual=" + id);
+        defaultManufacturerShouldNotBeFound("id.lessThan=" + id);
     }
 
     @Test
     @Transactional
     void getAllManufacturersByNameIsEqualToSomething() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
-        // Get all the manufacturerList where name equals to
-        defaultManufacturerFiltering("name.equals=" + DEFAULT_NAME, "name.equals=" + UPDATED_NAME);
+        // Get all the manufacturerList where name equals to DEFAULT_NAME
+        defaultManufacturerShouldBeFound("name.equals=" + DEFAULT_NAME);
+
+        // Get all the manufacturerList where name equals to UPDATED_NAME
+        defaultManufacturerShouldNotBeFound("name.equals=" + UPDATED_NAME);
     }
 
     @Test
     @Transactional
     void getAllManufacturersByNameIsInShouldWork() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
-        // Get all the manufacturerList where name in
-        defaultManufacturerFiltering("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME, "name.in=" + UPDATED_NAME);
+        // Get all the manufacturerList where name in DEFAULT_NAME or UPDATED_NAME
+        defaultManufacturerShouldBeFound("name.in=" + DEFAULT_NAME + "," + UPDATED_NAME);
+
+        // Get all the manufacturerList where name equals to UPDATED_NAME
+        defaultManufacturerShouldNotBeFound("name.in=" + UPDATED_NAME);
     }
 
     @Test
     @Transactional
     void getAllManufacturersByNameIsNullOrNotNull() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
         // Get all the manufacturerList where name is not null
-        defaultManufacturerFiltering("name.specified=true", "name.specified=false");
+        defaultManufacturerShouldBeFound("name.specified=true");
+
+        // Get all the manufacturerList where name is null
+        defaultManufacturerShouldNotBeFound("name.specified=false");
     }
 
     @Test
     @Transactional
     void getAllManufacturersByNameContainsSomething() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
-        // Get all the manufacturerList where name contains
-        defaultManufacturerFiltering("name.contains=" + DEFAULT_NAME, "name.contains=" + UPDATED_NAME);
+        // Get all the manufacturerList where name contains DEFAULT_NAME
+        defaultManufacturerShouldBeFound("name.contains=" + DEFAULT_NAME);
+
+        // Get all the manufacturerList where name contains UPDATED_NAME
+        defaultManufacturerShouldNotBeFound("name.contains=" + UPDATED_NAME);
     }
 
     @Test
     @Transactional
     void getAllManufacturersByNameNotContainsSomething() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
-        // Get all the manufacturerList where name does not contain
-        defaultManufacturerFiltering("name.doesNotContain=" + UPDATED_NAME, "name.doesNotContain=" + DEFAULT_NAME);
-    }
+        // Get all the manufacturerList where name does not contain DEFAULT_NAME
+        defaultManufacturerShouldNotBeFound("name.doesNotContain=" + DEFAULT_NAME);
 
-    private void defaultManufacturerFiltering(String shouldBeFound, String shouldNotBeFound) throws Exception {
-        defaultManufacturerShouldBeFound(shouldBeFound);
-        defaultManufacturerShouldNotBeFound(shouldNotBeFound);
+        // Get all the manufacturerList where name does not contain UPDATED_NAME
+        defaultManufacturerShouldBeFound("name.doesNotContain=" + UPDATED_NAME);
     }
 
     /**
@@ -303,12 +304,12 @@ class ManufacturerResourceIT {
     @Transactional
     void putExistingManufacturer() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
-        long databaseSizeBeforeUpdate = getRepositoryCount();
+        int databaseSizeBeforeUpdate = manufacturerRepository.findAll().size();
 
         // Update the manufacturer
-        Manufacturer updatedManufacturer = manufacturerRepository.findById(manufacturer.getId()).orElseThrow();
+        Manufacturer updatedManufacturer = manufacturerRepository.findById(manufacturer.getId()).get();
         // Disconnect from session so that the updates on updatedManufacturer are not directly saved in db
         em.detach(updatedManufacturer);
         updatedManufacturer.name(UPDATED_NAME);
@@ -318,20 +319,22 @@ class ManufacturerResourceIT {
             .perform(
                 put(ENTITY_API_URL_ID, manufacturerDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(manufacturerDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
             )
             .andExpect(status().isOk());
 
         // Validate the Manufacturer in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        assertPersistedManufacturerToMatchAllProperties(updatedManufacturer);
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeUpdate);
+        Manufacturer testManufacturer = manufacturerList.get(manufacturerList.size() - 1);
+        assertThat(testManufacturer.getName()).isEqualTo(UPDATED_NAME);
     }
 
     @Test
     @Transactional
     void putNonExistingManufacturer() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        manufacturer.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = manufacturerRepository.findAll().size();
+        manufacturer.setId(count.incrementAndGet());
 
         // Create the Manufacturer
         ManufacturerDTO manufacturerDTO = manufacturerMapper.toDto(manufacturer);
@@ -341,19 +344,20 @@ class ManufacturerResourceIT {
             .perform(
                 put(ENTITY_API_URL_ID, manufacturerDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(manufacturerDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Manufacturer in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithIdMismatchManufacturer() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        manufacturer.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = manufacturerRepository.findAll().size();
+        manufacturer.setId(count.incrementAndGet());
 
         // Create the Manufacturer
         ManufacturerDTO manufacturerDTO = manufacturerMapper.toDto(manufacturer);
@@ -361,70 +365,45 @@ class ManufacturerResourceIT {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restManufacturerMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, longCount.incrementAndGet())
+                put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(manufacturerDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Manufacturer in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void putWithMissingIdPathParamManufacturer() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        manufacturer.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = manufacturerRepository.findAll().size();
+        manufacturer.setId(count.incrementAndGet());
 
         // Create the Manufacturer
         ManufacturerDTO manufacturerDTO = manufacturerMapper.toDto(manufacturer);
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restManufacturerMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(manufacturerDTO)))
+            .perform(
+                put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
+            )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Manufacturer in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void partialUpdateManufacturerWithPatch() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-
-        // Update the manufacturer using partial update
-        Manufacturer partialUpdatedManufacturer = new Manufacturer();
-        partialUpdatedManufacturer.setId(manufacturer.getId());
-
-        restManufacturerMockMvc
-            .perform(
-                patch(ENTITY_API_URL_ID, partialUpdatedManufacturer.getId())
-                    .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedManufacturer))
-            )
-            .andExpect(status().isOk());
-
-        // Validate the Manufacturer in the database
-
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        assertManufacturerUpdatableFieldsEquals(
-            createUpdateProxyForBean(partialUpdatedManufacturer, manufacturer),
-            getPersistedManufacturer(manufacturer)
-        );
-    }
-
-    @Test
-    @Transactional
-    void fullUpdateManufacturerWithPatch() throws Exception {
-        // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
-
-        long databaseSizeBeforeUpdate = getRepositoryCount();
+        int databaseSizeBeforeUpdate = manufacturerRepository.findAll().size();
 
         // Update the manufacturer using partial update
         Manufacturer partialUpdatedManufacturer = new Manufacturer();
@@ -436,21 +415,51 @@ class ManufacturerResourceIT {
             .perform(
                 patch(ENTITY_API_URL_ID, partialUpdatedManufacturer.getId())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(partialUpdatedManufacturer))
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedManufacturer))
             )
             .andExpect(status().isOk());
 
         // Validate the Manufacturer in the database
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeUpdate);
+        Manufacturer testManufacturer = manufacturerList.get(manufacturerList.size() - 1);
+        assertThat(testManufacturer.getName()).isEqualTo(UPDATED_NAME);
+    }
 
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        assertManufacturerUpdatableFieldsEquals(partialUpdatedManufacturer, getPersistedManufacturer(partialUpdatedManufacturer));
+    @Test
+    @Transactional
+    void fullUpdateManufacturerWithPatch() throws Exception {
+        // Initialize the database
+        manufacturerRepository.saveAndFlush(manufacturer);
+
+        int databaseSizeBeforeUpdate = manufacturerRepository.findAll().size();
+
+        // Update the manufacturer using partial update
+        Manufacturer partialUpdatedManufacturer = new Manufacturer();
+        partialUpdatedManufacturer.setId(manufacturer.getId());
+
+        partialUpdatedManufacturer.name(UPDATED_NAME);
+
+        restManufacturerMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedManufacturer.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(partialUpdatedManufacturer))
+            )
+            .andExpect(status().isOk());
+
+        // Validate the Manufacturer in the database
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeUpdate);
+        Manufacturer testManufacturer = manufacturerList.get(manufacturerList.size() - 1);
+        assertThat(testManufacturer.getName()).isEqualTo(UPDATED_NAME);
     }
 
     @Test
     @Transactional
     void patchNonExistingManufacturer() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        manufacturer.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = manufacturerRepository.findAll().size();
+        manufacturer.setId(count.incrementAndGet());
 
         // Create the Manufacturer
         ManufacturerDTO manufacturerDTO = manufacturerMapper.toDto(manufacturer);
@@ -460,19 +469,20 @@ class ManufacturerResourceIT {
             .perform(
                 patch(ENTITY_API_URL_ID, manufacturerDTO.getId())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(manufacturerDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Manufacturer in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithIdMismatchManufacturer() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        manufacturer.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = manufacturerRepository.findAll().size();
+        manufacturer.setId(count.incrementAndGet());
 
         // Create the Manufacturer
         ManufacturerDTO manufacturerDTO = manufacturerMapper.toDto(manufacturer);
@@ -480,41 +490,47 @@ class ManufacturerResourceIT {
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restManufacturerMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
+                patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(manufacturerDTO))
+                    .content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
             )
             .andExpect(status().isBadRequest());
 
         // Validate the Manufacturer in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void patchWithMissingIdPathParamManufacturer() throws Exception {
-        long databaseSizeBeforeUpdate = getRepositoryCount();
-        manufacturer.setId(longCount.incrementAndGet());
+        int databaseSizeBeforeUpdate = manufacturerRepository.findAll().size();
+        manufacturer.setId(count.incrementAndGet());
 
         // Create the Manufacturer
         ManufacturerDTO manufacturerDTO = manufacturerMapper.toDto(manufacturer);
 
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restManufacturerMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(om.writeValueAsBytes(manufacturerDTO)))
+            .perform(
+                patch(ENTITY_API_URL)
+                    .contentType("application/merge-patch+json")
+                    .content(TestUtil.convertObjectToJsonBytes(manufacturerDTO))
+            )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Manufacturer in the database
-        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeUpdate);
     }
 
     @Test
     @Transactional
     void deleteManufacturer() throws Exception {
         // Initialize the database
-        insertedManufacturer = manufacturerRepository.saveAndFlush(manufacturer);
+        manufacturerRepository.saveAndFlush(manufacturer);
 
-        long databaseSizeBeforeDelete = getRepositoryCount();
+        int databaseSizeBeforeDelete = manufacturerRepository.findAll().size();
 
         // Delete the manufacturer
         restManufacturerMockMvc
@@ -522,34 +538,7 @@ class ManufacturerResourceIT {
             .andExpect(status().isNoContent());
 
         // Validate the database contains one less item
-        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
-    }
-
-    protected long getRepositoryCount() {
-        return manufacturerRepository.count();
-    }
-
-    protected void assertIncrementedRepositoryCount(long countBefore) {
-        assertThat(countBefore + 1).isEqualTo(getRepositoryCount());
-    }
-
-    protected void assertDecrementedRepositoryCount(long countBefore) {
-        assertThat(countBefore - 1).isEqualTo(getRepositoryCount());
-    }
-
-    protected void assertSameRepositoryCount(long countBefore) {
-        assertThat(countBefore).isEqualTo(getRepositoryCount());
-    }
-
-    protected Manufacturer getPersistedManufacturer(Manufacturer manufacturer) {
-        return manufacturerRepository.findById(manufacturer.getId()).orElseThrow();
-    }
-
-    protected void assertPersistedManufacturerToMatchAllProperties(Manufacturer expectedManufacturer) {
-        assertManufacturerAllPropertiesEquals(expectedManufacturer, getPersistedManufacturer(expectedManufacturer));
-    }
-
-    protected void assertPersistedManufacturerToMatchUpdatableProperties(Manufacturer expectedManufacturer) {
-        assertManufacturerAllUpdatablePropertiesEquals(expectedManufacturer, getPersistedManufacturer(expectedManufacturer));
+        List<Manufacturer> manufacturerList = manufacturerRepository.findAll();
+        assertThat(manufacturerList).hasSize(databaseSizeBeforeDelete - 1);
     }
 }

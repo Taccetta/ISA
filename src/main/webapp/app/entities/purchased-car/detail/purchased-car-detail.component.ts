@@ -1,17 +1,22 @@
-import { Component, input } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
-import SharedModule from 'app/shared/shared.module';
-import { FormatMediumDatePipe } from 'app/shared/date';
 import { IPurchasedCar } from '../purchased-car.model';
 
 @Component({
   selector: 'jhi-purchased-car-detail',
   templateUrl: './purchased-car-detail.component.html',
-  imports: [SharedModule, RouterModule, FormatMediumDatePipe],
 })
-export class PurchasedCarDetailComponent {
-  purchasedCar = input<IPurchasedCar | null>(null);
+export class PurchasedCarDetailComponent implements OnInit {
+  purchasedCar: IPurchasedCar | null = null;
+
+  constructor(protected activatedRoute: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.activatedRoute.data.subscribe(({ purchasedCar }) => {
+      this.purchasedCar = purchasedCar;
+    });
+  }
 
   previousState(): void {
     window.history.back();

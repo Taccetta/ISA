@@ -12,8 +12,9 @@
 // the project's config changing)
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { lighthouse, pa11y, prepareAudit } from 'cypress-audit';
+import ReportGenerator from 'lighthouse/report/generator/report-generator';
 
-export default (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions) => {
+export default async (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions) => {
   on('before:browser:launch', (browser, launchOptions) => {
     prepareAudit(launchOptions);
     if (browser.name === 'chrome' && browser.isHeadless) {
@@ -22,24 +23,9 @@ export default (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions) =
     }
   });
 
-  // Allows logging with cy.task('log', 'message') or cy.task('table', object)
   on('task', {
-    log(message) {
-      console.log(message);
-      return null;
-    },
-    table(message) {
-      console.table(message);
-      return null;
-    },
-  });
-
-  on('task', {
-    lighthouse: lighthouse(async lighthouseReport => {
-      const { default: ReportGenerator } = await import('lighthouse/report/generator/report-generator');
-      if (!existsSync('target/cypress/')) {
-        mkdirSync('target/cypress/', { recursive: true });
-      }
+    lighthouse: lighthouse(lighthouseReport => {
+      !existsSync('target/cypress') && mkdirSync('target/cypress', { recursive: true });
       writeFileSync('target/cypress/lhreport.html', ReportGenerator.generateReport(lighthouseReport.lhr, 'html'));
     }),
     pa11y: pa11y(),

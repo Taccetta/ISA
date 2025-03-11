@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { sampleWithNewData, sampleWithRequiredData } from '../car.test-samples';
+import { sampleWithRequiredData, sampleWithNewData } from '../car.test-samples';
 
 import { CarFormService } from './car-form.service';
 
@@ -24,7 +24,7 @@ describe('Car Form Service', () => {
             year: expect.any(Object),
             available: expect.any(Object),
             manufacturer: expect.any(Object),
-          }),
+          })
         );
       });
 
@@ -38,13 +38,14 @@ describe('Car Form Service', () => {
             year: expect.any(Object),
             available: expect.any(Object),
             manufacturer: expect.any(Object),
-          }),
+          })
         );
       });
     });
 
     describe('getCar', () => {
       it('should return NewCar for default Car initial value', () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const formGroup = service.createCarFormGroup(sampleWithNewData);
 
         const car = service.getCar(formGroup) as any;

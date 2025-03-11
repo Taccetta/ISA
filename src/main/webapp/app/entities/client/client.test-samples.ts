@@ -1,32 +1,30 @@
 import { IClient, NewClient } from './client.model';
 
 export const sampleWithRequiredData: IClient = {
-  id: 16289,
-  firstName: 'Sadye',
-  lastName: 'Macejkovic',
+  id: 71655,
+  firstName: 'Esta',
+  lastName: 'Stamm',
 };
 
 export const sampleWithPartialData: IClient = {
-  id: 8997,
-  firstName: 'Alexzander',
-  lastName: 'Stark',
-  email: 'Damaris.Littel@yahoo.com',
-  address: 'beside yum dimly',
-  phone: '558.532.1602',
+  id: 81014,
+  firstName: 'Antonia',
+  lastName: 'Kovacek',
+  phone: '981.379.2056 x899',
 };
 
 export const sampleWithFullData: IClient = {
-  id: 31496,
-  firstName: 'Zelda',
-  lastName: 'Herman',
-  email: 'Ines75@hotmail.com',
-  address: 'off',
-  phone: '687-693-9315 x6726',
+  id: 26444,
+  firstName: 'Javier',
+  lastName: 'Brakus',
+  email: 'Jaylen44@gmail.com',
+  address: 'Human card',
+  phone: '872-250-7474',
 };
 
 export const sampleWithNewData: NewClient = {
-  firstName: 'Ida',
-  lastName: 'Smitham',
+  firstName: 'Cleveland',
+  lastName: 'Wiza',
   id: null,
 };
 

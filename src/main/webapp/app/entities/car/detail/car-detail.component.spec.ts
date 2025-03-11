@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { RouterTestingHarness } from '@angular/router/testing';
+import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 
 import { CarDetailComponent } from './car-detail.component';
@@ -9,46 +8,29 @@ describe('Car Management Detail Component', () => {
   let comp: CarDetailComponent;
   let fixture: ComponentFixture<CarDetailComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [CarDetailComponent],
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      declarations: [CarDetailComponent],
       providers: [
-        provideRouter(
-          [
-            {
-              path: '**',
-              loadComponent: () => import('./car-detail.component').then(m => m.CarDetailComponent),
-              resolve: { car: () => of({ id: 30624 }) },
-            },
-          ],
-          withComponentInputBinding(),
-        ),
+        {
+          provide: ActivatedRoute,
+          useValue: { data: of({ car: { id: 123 } }) },
+        },
       ],
     })
       .overrideTemplate(CarDetailComponent, '')
       .compileComponents();
-  });
-
-  beforeEach(() => {
     fixture = TestBed.createComponent(CarDetailComponent);
     comp = fixture.componentInstance;
   });
 
   describe('OnInit', () => {
-    it('Should load car on init', async () => {
-      const harness = await RouterTestingHarness.create();
-      const instance = await harness.navigateByUrl('/', CarDetailComponent);
+    it('Should load car on init', () => {
+      // WHEN
+      comp.ngOnInit();
 
       // THEN
-      expect(instance.car()).toEqual(expect.objectContaining({ id: 30624 }));
-    });
-  });
-
-  describe('PreviousState', () => {
-    it('Should navigate to previous state', () => {
-      jest.spyOn(window.history, 'back');
-      comp.previousState();
-      expect(window.history.back).toHaveBeenCalled();
+      expect(comp.car).toEqual(expect.objectContaining({ id: 123 }));
     });
   });
 });

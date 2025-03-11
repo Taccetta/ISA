@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { ICar, NewCar } from '../car.model';
 
@@ -39,7 +39,7 @@ export class CarFormService {
         {
           nonNullable: true,
           validators: [Validators.required],
-        },
+        }
       ),
       model: new FormControl(carRawValue.model, {
         validators: [Validators.required, Validators.maxLength(100)],
@@ -64,7 +64,7 @@ export class CarFormService {
       {
         ...carRawValue,
         id: { value: carRawValue.id, disabled: true },
-      } as any /* cast to workaround https://github.com/angular/angular/issues/46458 */,
+      } as any /* cast to workaround https://github.com/angular/angular/issues/46458 */
     );
   }
 

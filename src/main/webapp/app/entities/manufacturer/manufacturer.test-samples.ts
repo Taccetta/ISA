@@ -1,22 +1,22 @@
 import { IManufacturer, NewManufacturer } from './manufacturer.model';
 
 export const sampleWithRequiredData: IManufacturer = {
-  id: 14753,
-  name: 'lest vary',
+  id: 6644,
+  name: 'GB Paradigm generation',
 };
 
 export const sampleWithPartialData: IManufacturer = {
-  id: 1917,
-  name: 'pupil',
+  id: 95404,
+  name: 'parse Indiana Associate',
 };
 
 export const sampleWithFullData: IManufacturer = {
-  id: 3071,
-  name: 'however till blah',
+  id: 28036,
+  name: 'structure Turkey',
 };
 
 export const sampleWithNewData: NewManufacturer = {
-  name: 'incidentally',
+  name: '24/7 Focused',
   id: null,
 };
 

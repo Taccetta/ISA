@@ -1,8 +1,9 @@
 package com.ar.edu.um.taccetta.cars.service;
 
 import com.ar.edu.um.taccetta.cars.service.dto.ClientDTO;
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service Interface for managing {@link com.ar.edu.um.taccetta.cars.domain.Client}.
@@ -33,11 +34,12 @@ public interface ClientService {
     Optional<ClientDTO> partialUpdate(ClientDTO clientDTO);
 
     /**
-     * Get all the ClientDTO where PurchasedCar is {@code null}.
+     * Get all the clients.
      *
-     * @return the {@link List} of entities.
+     * @param pageable the pagination information.
+     * @return the list of entities.
      */
-    List<ClientDTO> findAllWherePurchasedCarIsNull();
+    Page<ClientDTO> findAll(Pageable pageable);
 
     /**
      * Get the "id" client.

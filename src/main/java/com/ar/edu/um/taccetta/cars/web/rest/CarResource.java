@@ -6,13 +6,13 @@ import com.ar.edu.um.taccetta.cars.service.CarService;
 import com.ar.edu.um.taccetta.cars.service.criteria.CarCriteria;
 import com.ar.edu.um.taccetta.cars.service.dto.CarDTO;
 import com.ar.edu.um.taccetta.cars.web.rest.errors.BadRequestAlertException;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,10 +30,10 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link com.ar.edu.um.taccetta.cars.domain.Car}.
  */
 @RestController
-@RequestMapping("/api/cars")
+@RequestMapping("/api")
 public class CarResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CarResource.class);
+    private final Logger log = LoggerFactory.getLogger(CarResource.class);
 
     private static final String ENTITY_NAME = "car";
 
@@ -59,16 +59,17 @@ public class CarResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new carDTO, or with status {@code 400 (Bad Request)} if the car has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("")
+    @PostMapping("/cars")
     public ResponseEntity<CarDTO> createCar(@Valid @RequestBody CarDTO carDTO) throws URISyntaxException {
-        LOG.debug("REST request to save Car : {}", carDTO);
+        log.debug("REST request to save Car : {}", carDTO);
         if (carDTO.getId() != null) {
             throw new BadRequestAlertException("A new car cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        carDTO = carService.save(carDTO);
-        return ResponseEntity.created(new URI("/api/cars/" + carDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, carDTO.getId().toString()))
-            .body(carDTO);
+        CarDTO result = carService.save(carDTO);
+        return ResponseEntity
+            .created(new URI("/api/cars/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+            .body(result);
     }
 
     /**
@@ -81,10 +82,10 @@ public class CarResource {
      * or with status {@code 500 (Internal Server Error)} if the carDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PutMapping("/{id}")
+    @PutMapping("/cars/{id}")
     public ResponseEntity<CarDTO> updateCar(@PathVariable(value = "id", required = false) final Long id, @Valid @RequestBody CarDTO carDTO)
         throws URISyntaxException {
-        LOG.debug("REST request to update Car : {}, {}", id, carDTO);
+        log.debug("REST request to update Car : {}, {}", id, carDTO);
         if (carDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -96,10 +97,11 @@ public class CarResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        carDTO = carService.update(carDTO);
-        return ResponseEntity.ok()
+        CarDTO result = carService.update(carDTO);
+        return ResponseEntity
+            .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, carDTO.getId().toString()))
-            .body(carDTO);
+            .body(result);
     }
 
     /**
@@ -113,12 +115,12 @@ public class CarResource {
      * or with status {@code 500 (Internal Server Error)} if the carDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PatchMapping(value = "/cars/{id}", consumes = { "application/json", "application/merge-patch+json" })
     public ResponseEntity<CarDTO> partialUpdateCar(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody CarDTO carDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update Car partially : {}, {}", id, carDTO);
+        log.debug("REST request to partial update Car partially : {}, {}", id, carDTO);
         if (carDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -145,13 +147,9 @@ public class CarResource {
      * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of cars in body.
      */
-    @GetMapping("")
-    public ResponseEntity<List<CarDTO>> getAllCars(
-        CarCriteria criteria,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
-    ) {
-        LOG.debug("REST request to get Cars by criteria: {}", criteria);
-
+    @GetMapping("/cars")
+    public ResponseEntity<List<CarDTO>> getAllCars(CarCriteria criteria, @org.springdoc.api.annotations.ParameterObject Pageable pageable) {
+        log.debug("REST request to get Cars by criteria: {}", criteria);
         Page<CarDTO> page = carQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -163,9 +161,9 @@ public class CarResource {
      * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
      */
-    @GetMapping("/count")
+    @GetMapping("/cars/count")
     public ResponseEntity<Long> countCars(CarCriteria criteria) {
-        LOG.debug("REST request to count Cars by criteria: {}", criteria);
+        log.debug("REST request to count Cars by criteria: {}", criteria);
         return ResponseEntity.ok().body(carQueryService.countByCriteria(criteria));
     }
 
@@ -175,9 +173,9 @@ public class CarResource {
      * @param id the id of the carDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the carDTO, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<CarDTO> getCar(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get Car : {}", id);
+    @GetMapping("/cars/{id}")
+    public ResponseEntity<CarDTO> getCar(@PathVariable Long id) {
+        log.debug("REST request to get Car : {}", id);
         Optional<CarDTO> carDTO = carService.findOne(id);
         return ResponseUtil.wrapOrNotFound(carDTO);
     }
@@ -188,11 +186,12 @@ public class CarResource {
      * @param id the id of the carDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCar(@PathVariable("id") Long id) {
-        LOG.debug("REST request to delete Car : {}", id);
+    @DeleteMapping("/cars/{id}")
+    public ResponseEntity<Void> deleteCar(@PathVariable Long id) {
+        log.debug("REST request to delete Car : {}", id);
         carService.delete(id);
-        return ResponseEntity.noContent()
+        return ResponseEntity
+            .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
