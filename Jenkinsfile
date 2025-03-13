@@ -51,9 +51,15 @@ node {
 
     def dockerImage
     stage('publish docker') {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-login', passwordVariable:
-        'DOCKER_REGISTRY_PWD', usernameVariable: 'DOCKER_REGISTRY_USER')]) {
-        sh "./mvnw -ntp -X jib:build"
-    }
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-login', passwordVariable: 'DOCKER_REGISTRY_PWD', usernameVariable: 'DOCKER_REGISTRY_USER')]) {
+            sh """
+                echo "Configurando variables de entorno para Docker Hub..."
+                export DOCKER_REGISTRY_USER="${DOCKER_REGISTRY_USER}"
+                export DOCKER_REGISTRY_PWD="${DOCKER_REGISTRY_PWD}"
+                echo "Verificando configuración de Maven..."
+                echo "Ejecutando jib:build..."
+                ./mvnw -ntp jib:build -Dimage=taccetta/isa-cardealer:latest -Ddocker.username=${DOCKER_REGISTRY_USER} -Ddocker.password=${DOCKER_REGISTRY_PWD} -X
+            """
+        }
     }
 }
