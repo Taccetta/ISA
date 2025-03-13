@@ -1,4 +1,7 @@
 {
+  "annotations": {
+    "changelogDate": "20231204140414"
+  },
   "applications": ["carDealership"],
   "changelogDate": "20231204140414",
   "dto": "mapstruct",
@@ -35,6 +38,7 @@
       "otherEntityName": "manufacturer",
       "ownerSide": true,
       "relationshipName": "manufacturer",
+      "relationshipSide": "left",
       "relationshipType": "one-to-one"
     }
   ],

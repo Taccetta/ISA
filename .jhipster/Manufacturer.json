@@ -1,4 +1,7 @@
 {
+  "annotations": {
+    "changelogDate": "20231204140214"
+  },
   "applications": ["carDealership"],
   "changelogDate": "20231204140214",
   "dto": "mapstruct",
