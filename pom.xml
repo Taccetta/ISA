@@ -588,7 +588,7 @@
                             </platforms>
                         </from>
                         <to>
-                            <image>taccetta/isa-cardealer:latest</image>
+                            <image>taccetta/isa-cardealer</image>
                             <tags>
                                 <tag>${project.version}</tag>
                                 <tag>latest</tag>

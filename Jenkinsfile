@@ -53,7 +53,7 @@ node {
     stage('publish docker') {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-login', passwordVariable:
         'DOCKER_REGISTRY_PWD', usernameVariable: 'DOCKER_REGISTRY_USER')]) {
-        sh "./mvnw -ntp -X jib:build -Dimage=taccetta/isa-cardealer:latest"
+        sh "./mvnw -ntp -X jib:build"
     }
     }
 }
